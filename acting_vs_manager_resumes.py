@@ -23,7 +23,7 @@ from keras.models import Sequential, Model
 from keras.layers import Dense, Input
 from keras.optimizers import Adam
 
-resumes = load_files('actingAndManagerResumes/', shuffle=True)
+resumes = load_files('data/actingAndManagerResumes/', shuffle=True)
 
 # Split remainder into training and testing
 X_train, X_test, y_train, y_test = train_test_split(
