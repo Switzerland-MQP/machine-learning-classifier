@@ -26,7 +26,10 @@ tensorboard==1.7.0
 tensorflow==1.7.0
 termcolor==1.1.0
 Werkzeug==0.14.1
-pdfminer==20170720
-pytesseract==0.2.4
-pdf2image==0.1.14
+textract==1.6.1
 # needs poppler: apt install poppler-utils
+
+#For textract:
+# sudo apt install libpulse-dev
+# sudo apt install swig
+
