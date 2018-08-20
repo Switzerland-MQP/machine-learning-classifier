@@ -26,9 +26,7 @@ tensorflow==1.7.0
 termcolor==1.1.0
 Werkzeug==0.14.1
 textract==1.6.1
-# needs poppler: apt install poppler-utils
-
 #For textract:
+# needs poppler: apt install poppler-utils
 # sudo apt install libpulse-dev
 # sudo apt install swig
-
