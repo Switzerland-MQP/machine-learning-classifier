@@ -25,7 +25,14 @@ if __name__ == "__main__":
             if file_extension not in whitelist:
                 continue
 
-            text = to_plaintext(root + "/" + file)
+            full_file_name = root + "/" + file
+            try:
+                text = to_plaintext(full_file_name)
+            except:
+                logfile = open("errors.log", "w")
+                logfile.write("Couldn't convert file: {}".format(full_file_name))
+                logfile.close()
+
             destFileName = file + ".txt"
             destFileName = "{}/{}.txt".format(dest, file)
             print("Dest File Name: ", destFileName)
