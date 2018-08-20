@@ -105,5 +105,5 @@ venv.bak/
 *.png
 
 ocr_test/
-data/
-data.zip
+/pqp/data/
+/BP_DATA/
