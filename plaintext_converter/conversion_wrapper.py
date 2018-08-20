@@ -44,7 +44,7 @@ if __name__ == "__main__":
             try:
                 text = to_plaintext(full_file_name)
             except:
-                logfile = open(dest + "/errors.log", "w")
+                logfile = open("errors.log", "a")
                 logfile.write("Couldn't convert file: {}".format(full_file_name))
                 logfile.close()
 
