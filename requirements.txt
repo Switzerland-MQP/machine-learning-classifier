@@ -30,3 +30,7 @@ textract==1.6.1
 # needs poppler: apt install poppler-utils
 # sudo apt install libpulse-dev
 # sudo apt install swig
+nltk
+gensim
+bokeh
+

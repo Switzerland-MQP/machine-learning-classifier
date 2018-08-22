@@ -108,3 +108,5 @@ ocr_test/
 /pqp/data/
 /BP_DATA/
 /TEXTDATA/
+
+/model_output/*

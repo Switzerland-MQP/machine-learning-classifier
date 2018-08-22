@@ -17,7 +17,7 @@ from sklearn.pipeline import Pipeline
 
 # Import Data
 # Downloaded from http://www.nltk.org/nltk_data/
-moviedir = 'data/movie_reviews/txt_sentoken/'
+moviedir = 'TEXTDATA/'
 reviews = load_files(moviedir, shuffle=True)
 
 # Hide some data in the vault to avoid snooping
@@ -30,18 +30,20 @@ X_train, X_test, y_train, y_test = train_test_split(
     x_work, y_work, test_size=0.10
 )
 
-params = {'bootstrap': False,
+params = {
+    'bootstrap': False,
     'criterion': 'entropy',
     'max_depth': 3,
     'max_features': 5,
     'min_samples_leaf': 1,
     'min_samples_split': 2,
-    'n_estimators': 457}
+    'n_estimators': 457
+}
 
-text_clf = Pipeline([('tfidf', TfidfVectorizer(ngram_range=(1,3))),
-                    ('svd', TruncatedSVD(n_components=120)),
-                    ('clf', RandomForestClassifier(**params)),
-])
+text_clf = Pipeline([('tfidf', TfidfVectorizer(ngram_range=(1, 3))),
+                     ('svd', TruncatedSVD(n_components=120)),
+                     ('clf', RandomForestClassifier(**params)),
+                     ])
 
 text_clf.fit(X_train, y_train)
 predicted = text_clf.predict(X_test)

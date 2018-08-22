@@ -6,23 +6,18 @@ from sklearn.decomposition import TruncatedSVD
 
 # Models to try
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
-from sklearn.neighbors import KNeighborsClassifier
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.model_selection import train_test_split
 #  from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import RandomizedSearchCV
+from sklearn.metrics import confusion_matrix, f1_score
 
 #  from sklearn import metrics
 
-from keras.models import Sequential, Model
-from keras.layers import Dense, Input
-from keras.optimizers import Adam
-
 resumes = load_files('TEXTDATA/', shuffle=True)
-print("Loaded Resumes")
+print("Loaded docs")
 
 # Split remainder into training and testing
 X_train, X_test, y_train, y_test = train_test_split(
@@ -72,24 +67,27 @@ predicted = random_search.predict(X_test_pca)
 
 print("PCA with random forest")
 print("Accuracy: {}".format(np.mean(predicted == y_test)))
+
+
 #  tn, fp , fn, tp = metrics.confusion_matrix(y_test, predicted).ravel()
 #  print("True negatives:{0}\nFalse Positives:{1}\nFalse Negatives:{2}\nTrue Positives:{3}".format(tn, fp, fn, tp))
 #  print("F1 score:{}".format(metrics.f1_score(y_test, predicted)))
 
-'''
-false_positives = []
-true_positives = []
-for predicted_label, actual_label, example in zip(predicted, y_test, X_test):
-    #print("{0}, {1}".format(predicted_label, actual_label))
-    if predicted_label == 1 and actual_label == 0:
-        #print("Found one!")
-        false_positives += [example]
-    elif predicted_label == 1 and actual_label == 1:
-        true_positives += [example]
-print(len(false_positives))
-print(false_positives[0])
-print("\n")
-print(true_positives[0])
-'''
+#  false_positives = []
+#  true_positives = []
+#  for predicted_label, actual_label, example in zip(predicted, y_test, X_test):
+    #  # print("{0}, {1}".format(predicted_label, actual_label))
+    #  if predicted_label == 1 and actual_label == 0:
+        #  # print("Found one!")
+        #  false_positives += [example]
+    #  elif predicted_label == 1 and actual_label == 1:
+        #  true_positives += [example]
+#  print("False positives:", len(false_positives))
+#  print(false_positives[0])
+#  print("\n")
+#  print(true_positives[0])
 
 
+confusion_matrix(y_test, predicted)
+
+print("Confusion Matrix: \n{}".format(confusion_matrix(y_test, predicted)))
