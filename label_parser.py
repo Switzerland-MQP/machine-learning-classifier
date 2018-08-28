@@ -45,22 +45,6 @@ class LabelParser(HTMLParser):
 		self.raw_document = raw_document
 		super().feed(raw_document)
 	
-	def splice(self, start_pos, end_pos):
-		raw_lines = self.raw_document.split('\n')
-
-		start_line, start_index = start_pos
-		end_line, end_index = end_pos
-		start_line += 1 #Lines are 1 indexed
-		end_line += 1
-
-		lines = raw_lines[start_line:end_line]
-		lines = [lines[0][start_index:]] + lines[1:]
-		if len(lines) < 2:
-			return lines[0][:end_index-start_index]
-		else:
-			return lines[:-1] + [lines[-1][:end_index]]
-					
-	
 	def tag_is_valid(self, delimited_tag):
 		tags = delimited_tag.split('_')
 		return all([tag in all_categories for tag in tags])
