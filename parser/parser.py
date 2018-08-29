@@ -3,17 +3,26 @@ from html.parser import HTMLParser
 class Tag:
 	def __init__(self, name):
 		self.name = name
+		self.categories = []
 		self.children = []
 		self.is_open = True
 	
-	def __repr__(self):
-		return self.name + "(" + str(self.children) + ")"
+	def __repr__(self):	
+		return self.name + "(" + (str(self.categories) if self.categories else "" ) + str(self.children) + ")"
 
 	def name(self, name):
 		self.name = name
 
 	def close(self):
 		self.is_open = False
+
+	def set_categories(self, categories):
+		print("Setting to ", str(categories))
+		self.categories = categories
+
+	def set_name(self, name):
+		print("Setting to ", name)
+		self.name = name
 
 class LabelParser(HTMLParser):
 	def __init__(self):
@@ -108,9 +117,6 @@ if __name__ == "__main__":
 
 	print("Input :\n ", document)
 	print(ast)
-
-	#document = """0123456789\n0123456789\n"""
-	#pos_slice_wrapper(document, (1, 0), (1, 5))
 
 
 
