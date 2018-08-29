@@ -1,10 +1,5 @@
 from html.parser import HTMLParser
 
-personal_categories = ['name','id-number', 'location', 'online-id', 'dob', 'phone', 'physical', 'physiological', 'professional', 'genetic', 'mental', 'economic', 'cultural', 'social']
-sensitive_categories = ['criminal', 'origin', 'health', 'religion', 'political', 'philosophical', 'unions', 'sex-life', 'sex-orientation', 'biometric']
-all_categories = personal_categories + sensitive_categories
-
-
 class Tag:
 	def __init__(self, name):
 		self.name = name
