@@ -25,7 +25,7 @@ def pos_splice(raw_document, start_pos, end_pos):
 	end = get_index_of_nth_line(raw_document, end_line) + end_index
 
 	document = raw_document
-	#document = ''.join(raw_document.split('\n'))
+	#document = ''.join(raw_document.split('\n')) #toggle comment to count newline characters
 	return document[start:end]
 
 
@@ -104,14 +104,14 @@ class LabelParser(HTMLParser):
 
 
 if __name__ == "__main__":
-	#parser = LabelParser()
-	#document = """ <online-id_phone_name>Your contact:</online-id_phone_name>\n
-	#	blah \nblah <name> my name is <data> griffin</data></name> \n
-	#	and blah <name> my uncle's name is<data> dave</data></name> blah \n blah"""
-	#parser.feed(document)
+	parser = LabelParser()
+	document = """ <online-id_phone_name>Your contact:</online-id_phone_name>\n
+		blah \nblah <name> my name is <data> griffin</data></name> \n
+		and blah <name> my uncle's name is<data> dave</data></name> blah \n blah"""
+	parser.feed(document)
 
-	document = """0123456789\n0123456789\n"""
-	pos_slice_wrapper(document, (1, 0), (1, 5))
+	#document = """0123456789\n0123456789\n"""
+	#pos_slice_wrapper(document, (1, 0), (1, 5))
 
 
 
