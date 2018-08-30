@@ -98,7 +98,7 @@ class LabelParser(HTMLParser):
 		last_expression = on_list[-1]
 		
 		if type(last_expression) is str:
-			raise ParseError(str(self.getpos()) + ": encountered " + text + " directly after " + last_expression)
+			raise ParseError(str(self.getpos()) + ": encountered a string " + text + " directly after another string")
 		elif type(last_expression) is Tag:
 			if not last_expression.is_open:
 				on_list.append(text)
