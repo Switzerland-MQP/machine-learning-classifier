@@ -37,4 +37,4 @@ for file in text_files:
             num_data = num_data + len(matches)
 
 
-print("Total number of tags: " + str(num_data))
+print("Total number of <data> tags: " + str(num_data))
