@@ -6,15 +6,17 @@ from parser import Tag
 document = []
 
 def flag_lines(ast):
-	for element in ast:
+	global document	
+	document = []
 
+	for element in ast:
 		if type(element) is str:
 			handle_top_level_string(element)
 		elif type(element) is Tag:
 			if element.name == "Label":
 				handle_label(element)
 			else:
-				raise Exception("Line Flagging error: encountered something that isn't a valid top level element")
+				raise Exception("Line Flagging error: encountered something that isn't a valid top level element| tag name: "+element.name)
 	
 		else:
 			raise Exception("Line Flagging error: encountered something that isn't a valid top level element")
