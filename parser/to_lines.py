@@ -8,15 +8,14 @@ document = []
 def flag_lines(ast):
 	for element in ast:
 
-		print("Now doing element", element)	
-
 		if type(element) is str:
 			handle_top_level_string(element)
 		elif type(element) is Tag:
 			if element.name == "Label":
 				handle_label(element)
 			else:
-				print(element.name)
+				raise Exception("Line Flagging error: encountered something that isn't a valid top level element")
+	
 		else:
 			raise Exception("Line Flagging error: encountered something that isn't a valid top level element")
 	
@@ -29,7 +28,8 @@ class Line:
 		self.context = set()
 	
 	def __repr__(self):
-		return "Line("+self.text+"|"+str(list(self.categories))+"|"+str(list(self.context))+")"
+		#return "Line("+self.text+"|"+str(list(self.categories))+"|"+str(list(self.context))+")"
+		return str(list(self.categories)) + str(list(self.context)) + "| " + self.text
 
 def get_current_line():
 	if len(document) < 1:
@@ -43,8 +43,8 @@ def get_current_line():
 Applies the given categories and contexts to lines touched if they are given.
 """
 def append_document(string, categories=[], context=[]):
-	print("Appending document with string: ", string)
-	print("Categories: " + str(list(categories)) + "| Contexts: " + str(list(context)))
+	#print("Appending document with string: ", string)
+	#print("Categories: " + str(list(categories)) + "| Contexts: " + str(list(context)))
 
 	line = get_current_line()
 	if len(string)> 0:	
@@ -60,7 +60,6 @@ def append_document(string, categories=[], context=[]):
 			line.context.update(context)
 		else:
 			line.text += c
-			print("Appended text:", line.text)
 
 def handle_top_level_string(string):		
 	append_document(string, [], [])

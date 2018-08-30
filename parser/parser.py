@@ -17,11 +17,9 @@ class Tag:
 		self.is_open = False
 
 	def set_categories(self, categories):
-		print("Setting to ", str(categories))
 		self.categories = categories
 
 	def set_name(self, name):
-		print("Setting to ", name)
 		self.name = name
 
 class LabelParser(HTMLParser):
@@ -41,7 +39,7 @@ class LabelParser(HTMLParser):
 			print(self.getpos(), "Encountered a start tag - Current status| : ", tag_name)
 		
 		if len(attrs) > 0:
-			raise Exception("Parse Error: tag has spaces in name")
+			raise Exception("Parse Error" + self.getpos() + ": tag has spaces in name")
 	
 		self.handle_starttag_helper(self.document, tag_name)	
 
@@ -70,14 +68,14 @@ class LabelParser(HTMLParser):
 	
 	def handle_endtag_helper(self, on_list, tag_name):
 		if len(on_list) < 1:
-			raise Exception("Parse Error: close tag mismatch:", tag_name)
+			raise Exception("Parse Error" + self.getpos() + ": close tag mismatch:", tag_name)
 		last_expression = on_list[-1]
 
 		if type(last_expression) is str:
-			raise Exception("Parse Error: encountered close tag ", tag_name, " without a matching open tag")
+			raise Exception("Parse Error" + self.getpos() + ": encountered close tag ", tag_name, " without a matching open tag")
 		elif type(last_expression) is Tag:
 			if not last_expression.is_open:
-				raise Exception("Parse Error: encountered close tag ", tag_name, " without an open tag")
+				raise Exception("Parse Error" + self.getpos() + ": encountered close tag ", tag_name, " without an open tag")
 			else: # last_expression is open
 				if not last_expression.name == tag_name:
 					self.handle_endtag_helper(last_expression.children, tag_name)	

@@ -16,7 +16,6 @@ from parser import Tag
 	
 def validate_ast(ast):
 	for element in ast:
-		print(type(element))
 			
 		if type(element) is Tag:
 			if not are_valid_categories(element.name.split("_")) and not element.name == 'data':
@@ -29,8 +28,6 @@ def validate_ast(ast):
 				raise Exception("Semantic Error: top-level data tag found")
 
 			return validate_children(element.children)
-		else:
-			print("fffff")
 
 def validate_children(children):
 	for element in children:

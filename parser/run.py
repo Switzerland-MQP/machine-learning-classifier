@@ -1,6 +1,21 @@
 from parser import LabelParser
 from semantic_analysis import validate_ast
 from to_lines import flag_lines
+import sys
+
+if len(sys.argv) > 1:
+	document = " ".join(sys.argv[1:])
+	print("Input: " + document)
+
+	parser = LabelParser()
+	ast = parser.parse(document)
+	validate_ast(ast)
+	print("AST: ", ast)
+
+	lines = flag_lines(ast)
+	print("Lines:", lines)
+		
+	quit()
 
 parser = LabelParser()
 #document = """ <online-id_phone_name>Your contact:</online-id_phone_name>\n
