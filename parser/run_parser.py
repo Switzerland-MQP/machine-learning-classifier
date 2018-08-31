@@ -1,5 +1,5 @@
-from parser import LabelParser
-from to_lines import flag_lines
+from parser.parser import LabelParser
+from parser.to_lines import flag_lines
 import sys
 
 def run_parser(filename):
@@ -15,12 +15,12 @@ def run_parser(filename):
 
 
 if __name__ == '__main__':
-	if len(sys.argv) < 2:
-		print("run_parser: must be run with a filename as argument")	
-		quit()
-	filename = sys.argv[1]
-	lines = run_parser(filename)
-	for line in lines:
-		print(line)
+        if len(sys.argv) < 2:
+                print("run_parser: must be run with a filename as argument")	
+                quit()
+        filename = sys.argv[1]
+        lines = run_parser(filename)
+        for line in lines:
+                print(line)
 
 

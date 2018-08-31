@@ -14,7 +14,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.metrics import confusion_matrix, f1_score
 
-#  from sklearn import metrics
 
 resumes = load_files('TEXTDATA/', shuffle=True)
 print("Loaded docs")
