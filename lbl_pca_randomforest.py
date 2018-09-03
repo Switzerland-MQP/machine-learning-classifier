@@ -1,5 +1,7 @@
 import numpy as np
 
+import os
+
 from scipy.stats import randint as sp_randint
 from sklearn.datasets import load_files
 from sklearn.decomposition import TruncatedSVD
@@ -31,7 +33,20 @@ def convert_categories(categories):
     return 0
 
 
-lines = run_parser("./parser/sampleText.txt")
+def read_dir():
+    documents = {}
+    all_lines = []
+    for root, dirs, files in os.walk("./TEXTDATA"):
+        for file in files:
+            full_path = root + '/' + file
+            lines = run_parser(full_path)
+            documents[full_path] = lines
+            all_lines = all_lines + lines
+    print(all_lines)
+    return all_lines
+
+
+lines = read_dir()
 
 data = np.array([])
 target = np.array([])
@@ -90,25 +105,6 @@ print("PCA with random forest")
 
 accuracy = fbeta_score(y_test, predicted, average=None, beta=2)
 print("Accuracy: {}".format(accuracy))
-
-
-#  tn, fp , fn, tp = metrics.confusion_matrix(y_test, predicted).ravel()
-#  print("True negatives:{0}\nFalse Positives:{1}\nFalse Negatives:{2}\nTrue Positives:{3}".format(tn, fp, fn, tp))
-#  print("F1 score:{}".format(metrics.f1_score(y_test, predicted)))
-
-#  false_positives = []
-#  true_positives = []
-#  for predicted_label, actual_label, example in zip(predicted, y_test, X_test):
-    #  # print("{0}, {1}".format(predicted_label, actual_label))
-    #  if predicted_label == 1 and actual_label == 0:
-        #  # print("Found one!")
-        #  false_positives += [example]
-    #  elif predicted_label == 1 and actual_label == 1:
-        #  true_positives += [example]
-#  print("False positives:", len(false_positives))
-#  print(false_positives[0])
-#  print("\n")
-#  print(true_positives[0])
 
 
 confusion_matrix(y_test, predicted)
