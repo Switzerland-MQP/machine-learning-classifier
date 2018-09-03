@@ -18,9 +18,10 @@ from sklearn.metrics import fbeta_score
 import utils
 
 
-data, target = utils.load_dirs_custom([
+data, target, documents = utils.load_dirs_custom([
     './SENSITIVE_DATA/html-tagged',
-    './PERSONAL_DATA/html-tagged'
+    './PERSONAL_DATA/html-tagged',
+    './NON_PERSONAL_DATA'
 ])
 
 X_train, X_test, y_train, y_test = train_test_split(
@@ -78,3 +79,29 @@ print("Accuracy: {}".format(accuracy))
 confusion_matrix(y_test, predicted)
 
 print("Confusion Matrix: \n{}".format(confusion_matrix(y_test, predicted)))
+
+
+documents_predicted = []
+documents_target = []
+for doc in documents:
+    document_count = count_vect.transform(doc.data)
+    document_tfidf = tfidf_transformer.transform(document_count)
+    document_pca = pca.transform(document_tfidf)
+
+    predicted_lines = random_search.predict(document_pca)
+    predicted_doc = utils.classify_doc(predicted_lines)
+    documents_predicted.append(predicted_doc)
+    documents_target.append(doc.category)
+
+doc_accuracy = fbeta_score(
+    documents_target,
+    documents_predicted,
+    average=None,
+    beta=2
+)
+
+print("Document Accuracy: {}".format(doc_accuracy))
+
+print("Document Confusion Matrix: \n{}".format(
+    confusion_matrix(documents_target, documents_predicted)
+))

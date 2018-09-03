@@ -19,22 +19,43 @@ sensitive_categories = [
 def load_dirs_custom(directories):
     all_data = np.array([])
     all_target = np.array([])
+    all_documents = []
     for d in directories:
-        data, target = load_dir_custom(d)
-        all_data = np.append(all_data, [data])
-        all_target = np.append(all_target, [target])
-    return all_data, all_target
+        data, target, documents = load_dir_custom(d)
+        all_data = np.append(all_data, data)
+        all_target = np.append(all_target, target)
+        all_documents += documents
+    return all_data, all_target, all_documents
 
 
 def load_dir_custom(directory):
-    lines = read_dir(directory)
+    documents = read_dir(directory)
 
-    data = np.array([])
-    target = np.array([])
-    for l in lines:
-        data = np.append(data, [l.text])
-        target = np.append(target, [convert_categories(l.categories)])
-    return data, target
+    all_data = np.array([])
+    all_target = np.array([])
+    for doc in documents:
+        data = np.array([])
+        target = np.array([])
+        for line in doc.lines:
+            data = np.append(data, [line.text])
+            target = np.append(target, [convert_categories(line.categories)])
+        doc.data = data
+        doc.target = target
+        doc.category = classify_doc(target)
+
+        all_data = np.append(all_data, data)
+        all_target = np.append(all_target, target)
+
+    return all_data, all_target, documents
+
+
+def classify_doc(target_array):
+    if 2 in target_array:
+        return 2
+    elif 1 in target_array:
+        return 1
+    else:
+        return 0
 
 
 def convert_categories(categories):
@@ -48,13 +69,22 @@ def convert_categories(categories):
 
 
 def read_dir(directory):
-    documents = {}
-    all_lines = []
+    documents = []
     for root, dirs, files in os.walk(directory):
         for file in files:
             full_path = root + '/' + file
             lines = run_parser(full_path)
-            documents[full_path] = lines
-            all_lines = all_lines + lines
+            doc = Document(full_path, lines)
+            documents.append(doc)
 
-    return all_lines
+    return documents
+
+
+class Document:
+    def __init__(self, path, lines):
+        self.path = path
+        self.lines = lines
+        self.data = np.array([])
+        self.target = np.array([])
+        self.category = -1
+
