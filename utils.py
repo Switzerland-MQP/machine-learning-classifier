@@ -16,6 +16,15 @@ sensitive_categories = [
 ]
 
 
+def load_dirs_custom(directories):
+    all_data, all_targets = []
+    for d in directories:
+        data, target = load_dir_custom(d)
+        all_data += data
+        all_targets += target
+    return all_data, all_targets
+
+
 def load_dir_custom(directory):
     lines = read_dir(directory)
 

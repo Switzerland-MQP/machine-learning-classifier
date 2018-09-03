@@ -18,7 +18,10 @@ from sklearn.metrics import fbeta_score
 import utils
 
 
-data, target = utils.load_dir_custom('./TEXTDATA')
+data, target = utils.load_dirs_custom([
+    './SENSITIVE_DATA/html-tagged',
+    './PERSONAL_DATA/html-tagged'
+])
 
 X_train, X_test, y_train, y_test = train_test_split(
     data, target, test_size=0.20
