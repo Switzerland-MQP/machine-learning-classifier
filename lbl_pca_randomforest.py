@@ -1,9 +1,7 @@
 import numpy as np
 
-import os
 
 from scipy.stats import randint as sp_randint
-from sklearn.datasets import load_files
 from sklearn.decomposition import TruncatedSVD
 
 # Models to try
@@ -14,46 +12,13 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.model_selection import train_test_split
 #  from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import RandomizedSearchCV
-from sklearn.metrics import confusion_matrix, f1_score
+from sklearn.metrics import confusion_matrix
 from sklearn.metrics import fbeta_score
 
-from parser.run_parser import run_parser 
-
-personal_categories = ['name','id-number', 'location', 'online-id', 'dob', 'phone', 'physical', 'physiological', 'professional', 'genetic', 'mental', 'economic', 'cultural', 'social']
-sensitive_categories = ['criminal', 'origin', 'health', 'religion', 'political', 'philosophical', 'unions', 'sex-life', 'sex-orientation', 'biometric']
+import utils
 
 
-def convert_categories(categories):
-    for c in sensitive_categories:
-        if c in categories:
-            return 2
-    for c in personal_categories:
-        if c in categories:
-            return 1
-    return 0
-
-
-def read_dir():
-    documents = {}
-    all_lines = []
-    for root, dirs, files in os.walk("./TEXTDATA"):
-        for file in files:
-            full_path = root + '/' + file
-            lines = run_parser(full_path)
-            documents[full_path] = lines
-            all_lines = all_lines + lines
-    print(all_lines)
-    return all_lines
-
-
-lines = read_dir()
-
-data = np.array([])
-target = np.array([])
-for l in lines:
-    data = np.append(data, [l.text])
-    target = np.append(target, [convert_categories(l.categories)])
-
+data, target = utils.load_dir_custom('./TEXTDATA')
 
 X_train, X_test, y_train, y_test = train_test_split(
     data, target, test_size=0.20
