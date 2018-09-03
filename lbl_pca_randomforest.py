@@ -55,7 +55,7 @@ parameters_rand = {
     "max_features": sp_randint(1, 11),
     "min_samples_split": sp_randint(2, 11),
     "min_samples_leaf": sp_randint(1, 11),
-    "class_weight": ["balanced", {0: 1, 1: 1, 2: 2}, {0: 1, 1: 3, 2: 5}],
+    "class_weight": ["balanced", {0: 1, 1: 2, 2: 3}, {0: 1, 1: 3, 2: 5}],
     "bootstrap": [True, False],
     "criterion": ["gini", "entropy"]
 }
@@ -63,7 +63,7 @@ parameters_rand = {
 # run randomized search
 # Accuracy should be comparable to grid search, but runs much much faster
 print("Training Model")
-n_iter_search = 25
+n_iter_search = 20
 random_search = RandomizedSearchCV(clf, param_distributions=parameters_rand,
                                    n_iter=n_iter_search,
                                    n_jobs=-1)
