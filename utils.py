@@ -17,13 +17,13 @@ sensitive_categories = [
 
 
 def load_dirs_custom(directories):
-    all_data = []
-    all_targets = []
+    all_data = np.array([])
+    all_target = np.array([])
     for d in directories:
         data, target = load_dir_custom(d)
-        all_data = all_data + data
-        all_targets = all_targets + target
-    return all_data, all_targets
+        all_data = np.append(all_data, [data])
+        all_target = np.append(all_target, [target])
+    return all_data, all_target
 
 
 def load_dir_custom(directory):

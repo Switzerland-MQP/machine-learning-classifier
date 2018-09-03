@@ -1,8 +1,8 @@
 #import numpy as np
-from run_parser import run_parser
+from parser.run_parser import run_parser
 from os import listdir
 from os.path import isfile, join
-from to_lines import Line
+#  from parser.to_lines import Line
 
 parent_dir = '../TEXTDATA/LINE_BY_LINE'
 personal_dir = parent_dir + '/PERSONAL_DATA/html-tagged'
