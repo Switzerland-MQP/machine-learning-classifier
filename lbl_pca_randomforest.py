@@ -35,7 +35,7 @@ X_train_count = count_vect.fit_transform(X_train)
 tfidf_transformer = TfidfTransformer()
 X_train_tfidf = tfidf_transformer.fit_transform(X_train_count)
 
-pca = TruncatedSVD(n_components=20)
+pca = TruncatedSVD(n_components=200)
 pca.fit(X_train_tfidf)
 
 X_train_pca = pca.transform(X_train_tfidf)
@@ -50,14 +50,15 @@ X_test_pca = pca.transform(X_test_tfidf)
 clf = RandomForestClassifier()
 
 parameters_rand = {
-    "n_estimators": sp_randint(300, 2000),
-    "max_depth": [3, None],
-    "max_features": sp_randint(1, 11),
-    "min_samples_split": sp_randint(2, 11),
-    "min_samples_leaf": sp_randint(1, 11),
-    "class_weight": ["balanced", {0: 1, 1: 2, 2: 3}, {0: 1, 1: 3, 2: 5}],
-    "bootstrap": [True, False],
-    "criterion": ["gini", "entropy"]
+    "n_estimators": [799],
+    "max_depth": [2, 3, 5, 7, None],
+    "max_features": [4],
+    "min_samples_split": [10],
+    "min_samples_leaf": [2],
+    "class_weight": ["balanced", {0: 1, 1: 2, 2: 3}, {0: 1, 1: 3, 2: 5},
+                     {0: 1, 1: 1, 2: 2}, {0: 1, 1: 1.5, 2: 1.75}],
+    "bootstrap": [False],
+    "criterion": ["entropy"]
 }
 
 # run randomized search
