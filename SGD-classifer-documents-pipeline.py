@@ -1,23 +1,18 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import random
-from sklearn.model_selection import RandomizedSearchCV
 
 from scipy.stats import randint as sp_randint
 from sklearn.datasets import load_files
 from sklearn.decomposition import PCA
 
 # Models to try
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
-from sklearn.naive_bayes import MultinomialNB
 
 from sklearn.linear_model import SGDClassifier
 
@@ -28,9 +23,10 @@ X_train, X_test, y_train, y_test = train_test_split(
     documents.data, documents.target, test_size=0.30
 )
 
-text_clf = Pipeline([('vect', CountVectorizer()),
+text_clf = Pipeline([('vect', CountVectorizer(ngram_range=(1, 3))),
                     ('tfidf', TfidfTransformer()),
-                    ('clf', SGDClassifier(loss='log', penalty='l2', alpha=1e-3, random_state=42, max_iter=1000, tol=None, shuffle=True)),
+										('pca', TruncatedSVD(n_components=200)),
+                    ('clf', SGDClassifier(loss='hinge', penalty='none', learning_rate='optimal', alpha=1e-4, epsilon=0.1, max_iter=1000, tol=None, shuffle=True)),
 ])
 
 
