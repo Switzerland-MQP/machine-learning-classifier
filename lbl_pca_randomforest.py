@@ -55,6 +55,7 @@ parameters_rand = {
     "max_features": sp_randint(1, 11),
     "min_samples_split": sp_randint(2, 11),
     "min_samples_leaf": sp_randint(1, 11),
+    "class_weight": ["balanced", {0: 1, 1: 2, 2: 3}, {0: 1, 1: 3, 2: 5}],
     "bootstrap": [True, False],
     "criterion": ["gini", "entropy"]
 }
@@ -92,6 +93,7 @@ for doc in documents:
     predicted_doc = utils.classify_doc(predicted_lines)
     documents_predicted.append(predicted_doc)
     documents_target.append(doc.category)
+
 
 doc_accuracy = fbeta_score(
     documents_target,
