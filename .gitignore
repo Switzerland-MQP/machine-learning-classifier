@@ -110,3 +110,12 @@ ocr_test/
 /TEXTDATA/
 
 /model_output/*
+
+
+/PERSONAL_DATA/
+/NON_PERSONAL_DATA/
+/SENSITIVE_DATA/
+
+/TAGGED_DATA/
+
+/ae/

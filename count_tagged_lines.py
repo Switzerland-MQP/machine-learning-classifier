@@ -4,10 +4,10 @@ from os import listdir
 from os.path import isfile, join
 #  from parser.to_lines import Line
 
-parent_dir = '.'
-#  personal_dir = parent_dir + '/PERSONAL_DATA/html-tagged'
-#  sensitive_dir = parent_dir + '/SENSITIVE_DATA/html-tagged'
-non_personal_dir = './NON_PERSONAL_DATA'
+parent_dir = './TEXTDATA'
+personal_dir = parent_dir + '/PERSONAL_DATA/html-tagged'
+sensitive_dir = parent_dir + '/SENSITIVE_DATA/html-tagged'
+non_personal_dir = parent_dir + '/NON_PERSONAL_DATA'
 
 
 def get_files_in_dir(path):
@@ -48,10 +48,18 @@ def count_lines(files):
 		print(category + " => " + str( category_totals[category] ))
 
 
-#files = get_files_in_dir(personal_dir)
-#files = files + get_files_in_dir(sensitive_dir)
+print("Files we HTML tagged: ")
+files = get_files_in_dir(personal_dir)
+files = files + get_files_in_dir(sensitive_dir)
 
-#count_lines(files)
+count_lines(files)
+
+print(" ================================================" )
+print("Files we didn't tag yet:")
+files = get_files_in_dir(parent_dir + "/PERSONAL_DATA/")
+files = files + get_files_in_dir(parent_dir + "/SENSITIVE_DATA/")
+
+count_lines(files)
 
 print(" ================================================" )
 #  files = get_files_in_dir(parent_dir + "/PERSONAL_DATA/")
