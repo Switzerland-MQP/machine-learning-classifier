@@ -20,7 +20,7 @@ from sklearn import metrics
 
 documents = load_files('TEXTDATA/', shuffle=True)
 X_train, X_test, y_train, y_test = train_test_split(
-    documents.data, documents.target, test_size=0.20
+    documents.data, documents.target, test_size=0.40
 )
 
 text_clf = Pipeline([('vect', CountVectorizer(ngram_range=(1, 3))),
