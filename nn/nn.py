@@ -43,10 +43,8 @@ input_shape = x_train.shape[1]
 
 
 nn = Sequential()
-nn.add(Dense(2048, activation='relu', input_shape=(input_shape,))),
-nn.add(Dropout(0.7))
-nn.add(Dense(1024, activation='relu'))
-nn.add(Dropout(0.7))
+nn.add(Dense(512, activation='relu', input_shape=(input_shape,)))
+nn.add(Dropout(0.5))
 nn.add(Dense(3,  activation='softmax', name="out_layer"))
 nn.compile(loss= 'categorical_crossentropy',
            optimizer='adam',
@@ -60,7 +58,7 @@ y_test_onehot = y_test.copy()
 
 history = nn.fit(x_train, y_train,
                  batch_size=196,
-                 epochs=40,
+                 epochs=150,
 								 verbose=2,
                  validation_data=(x_test, y_test))
 
