@@ -6,21 +6,23 @@ from sklearn.decomposition import TruncatedSVD
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.model_selection import train_test_split
 
 import utils
 sns.set()
 
 
-data, target, documents = utils.load_dirs_custom([
+documents = utils.load_dirs_custom([
     './SENSITIVE_DATA/html-tagged',
     './PERSONAL_DATA/html-tagged',
     './NON_PERSONAL_DATA'
 ])
 
-X_train, X_test, y_train, y_test = train_test_split(
-    data, target, test_size=0.20
+doc_train, doc_test, = utils.document_test_train_split(
+    documents, 0.20
 )
+
+X_train, y_train = utils.convert_docs_to_lines(doc_train)
+X_test, y_test = utils.convert_docs_to_lines(doc_test)
 
 
 count_vect = CountVectorizer()
@@ -43,26 +45,18 @@ X_test_pca = pca.transform(X_test_tfidf)
 
 plt.figure(1)
 plt.subplot(121)
-
 plt.plot(np.cumsum(pca.explained_variance_))
-plt.title("PCA")
-plt.ylabel("Explained Variance")
+plt.title("PCA Cumulative Explained Variance")
+plt.ylabel("Cumulative Explained Variance")
 plt.xlabel("# components")
 
 plt.subplot(122)
 plt.plot(pca.explained_variance_)
 plt.title("PCA Individual Explained Variance")
-plt.ylabel("Explained Variance")
+plt.ylabel("Individual Explained Variance")
 plt.xlabel("# components")
-plt.show()
 
 plt.tight_layout()
-plt.show()
-
-plt.plot(pca.explained_variance_)
-plt.title("PCA Cumulative Explianed Variance")
-plt.ylabel("Cumulative Explained Variance")
-plt.xlabel("# components")
 plt.show()
 
 

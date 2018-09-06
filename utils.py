@@ -1,6 +1,7 @@
 import numpy as np
 import os
 from parser.run_parser import run_parser
+from sklearn.model_selection import train_test_split
 
 personal_categories = [
     'name', 'id-number', 'location', 'online-id',
@@ -17,36 +18,36 @@ sensitive_categories = [
 
 
 def load_dirs_custom(directories):
-    all_data = np.array([])
-    all_target = np.array([])
     all_documents = []
     for d in directories:
-        data, target, documents = load_dir_custom(d)
-        all_data = np.append(all_data, data)
-        all_target = np.append(all_target, target)
-        all_documents += documents
-    return all_data, all_target, all_documents
+        all_documents += load_dir_custom(d)
+    return all_documents
+
+
+def document_test_train_split(documents, test_size):
+    document_labels = get_documents_labels(documents)
+    doc_train, doc_test, _, _ = train_test_split(
+        documents, document_labels, test_size=test_size, shuffle=True
+    )
+    return doc_train, doc_test
 
 
 def load_dir_custom(directory):
     documents = read_dir(directory)
+    fill_docs(documents)
+    return documents
 
-    all_data = np.array([])
-    all_target = np.array([])
+
+def fill_docs(documents):
     for doc in documents:
         data = np.array([])
-        target = np.array([])
+        targets = np.array([])
         for line in doc.lines:
             data = np.append(data, [line.text])
-            target = np.append(target, [convert_categories(line.categories)])
+            targets = np.append(targets, [convert_categories(line.categories)])
         doc.data = data
-        doc.target = target
-        doc.category = classify_doc(target)
-
-        all_data = np.append(all_data, data)
-        all_target = np.append(all_target, target)
-
-    return all_data, all_target, documents
+        doc.targets = targets
+        doc.category = classify_doc(targets)
 
 
 def classify_doc(target_array):
@@ -80,11 +81,26 @@ def read_dir(directory):
     return documents
 
 
+def get_documents_labels(documents):
+    targets = []
+    for doc in documents:
+        targets.append(doc.category)
+    return targets
+
+
+def convert_docs_to_lines(documents):
+    targets = np.array([])
+    data = np.array([])
+    for doc in documents:
+        targets = np.append(targets, doc.targets)
+        data = np.append(data, doc.data)
+    return data, targets
+
+
 class Document:
     def __init__(self, path, lines):
         self.path = path
         self.lines = lines
         self.data = np.array([])
-        self.target = np.array([])
+        self.targets = np.array([])
         self.category = -1
-

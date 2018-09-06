@@ -1,23 +1,23 @@
 import numpy as np
 
 
-#  from scipy.stats import randint as sp_randint
-from sklearn.decomposition import TruncatedSVD
 from scipy.stats import randint as sp_randint
+from sklearn.decomposition import TruncatedSVD
 
 # Models to try
 from sklearn.ensemble import RandomForestClassifier
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
-#  from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import train_test_split
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import fbeta_score
-
-from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV
 import utils
-
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import SGDClassifier
+from sklearn import metrics
 
 documents = utils.load_dirs_custom([
     './SENSITIVE_DATA/html-tagged',
@@ -35,38 +35,25 @@ X_train, y_train = utils.convert_docs_to_lines(doc_train)
 X_test, y_test = utils.convert_docs_to_lines(doc_test)
 
 
-text_clf = Pipeline([('vect', CountVectorizer()),
-                     ('tfidf', TfidfTransformer()),
-                     ('pca', TruncatedSVD(n_components=20)),
-                     ('clf', RandomForestClassifier(n_jobs=-1))
-                     ])
 
-param_distributions = {
-    "vect__ngram_range": [(1, 3)],
-    "pca__n_components": sp_randint(20, 4000),
-    "clf__n_estimators": sp_randint(100, 2000),
-    "clf__max_features": sp_randint(1, 8),
-    "clf__min_samples_leaf": sp_randint(1, 6),
-    "clf__class_weight": [
-        {0: 1, 1: 1.5, 2: 1.75},
-        {0: 1, 1: 2, 2: 3},
-        {0: 1, 1: 3, 2: 5},
-    ],
-    "clf__criterion": ["entropy", "gini"]
+
+clf = SGDClassifier(shuffle=True, tol=None, max_iter=1000)
+
+params = {
+ "loss": ["hinge", "log", "modified_huber", "squared_hinge", "perceptron", "squared_loss", "huber"],
+ "penalty": ['l1', 'l2', 'none'],
+ "class_weight": [{0:1, 1:1.5, 2:1.75}, {0:1, 1:2, 0:3}, {0:1, 1:3, 0:5},"balanced", None],
+ "learning_rate": ['optimal']
 }
 
+gridsearch_clf = Pipeline([
+	('vect', CountVectorizer()),
+  ('tfidf', TfidfTransformer()),
+	('gridsearch', GridSearchCV(clf, param_grid=params, n_jobs=-1))						
+])
 
-n_iter_search = 50
-random_search = RandomizedSearchCV(
-    text_clf,
-    param_distributions=param_distributions,
-    n_iter=n_iter_search,
-    n_jobs=-1
-)
-
-random_search.fit(X_train, y_train)
-
-
+print("Training Model")
+gridsearch_clf.fit(X_train, y_train)
 print("PCA with random forest")
 
 documents_predicted = []
@@ -74,7 +61,7 @@ documents_target = []
 all_predicted_lines = []
 all_target_lines = []
 for doc in doc_test:
-    predicted_lines = random_search.predict(doc.data)
+    predicted_lines = gridsearch_clf.predict(doc.data)
     all_predicted_lines += list(predicted_lines)
     all_target_lines += list(doc.targets)
 
@@ -109,4 +96,3 @@ print("Document Accuracy: {}".format(doc_accuracy))
 print("Document Confusion Matrix: \n{}".format(
     confusion_matrix(documents_target, documents_predicted)
 ))
-
