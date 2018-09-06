@@ -24,10 +24,10 @@ def count_lines(files):
 		try:
 			lines = run_parser(f)
 			files_processed += 1
-		except Exception as e:		
+		except Exception as e:
 			error_files += 1
 			print(f + " --> " + str(e))
-			continue			
+			continue
 
 		#print("File " + f + " has " + str(len(lines)) + " lines")
 
@@ -47,6 +47,7 @@ def count_lines(files):
 	for category in category_totals.keys():
 		print(category + " => " + str( category_totals[category] ))
 
+
 print("Files we HTML tagged: ")
 files = get_files_in_dir(personal_dir)
 files = files + get_files_in_dir(sensitive_dir)
@@ -60,4 +61,9 @@ files = files + get_files_in_dir(parent_dir + "/SENSITIVE_DATA/")
 
 count_lines(files)
 
-		
+print(" ================================================" )
+#  files = get_files_in_dir(parent_dir + "/PERSONAL_DATA/")
+#  files = files + get_files_in_dir(parent_dir + "/SENSITIVE_DATA/")
+files = get_files_in_dir(non_personal_dir)
+
+count_lines(files)
