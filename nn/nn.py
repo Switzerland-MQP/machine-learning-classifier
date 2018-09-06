@@ -42,11 +42,11 @@ print("Finished data preprocessing - {} elapsed".format(time.time()-start))
 input_shape = x_train.shape[1]
 
 
-ae = Sequential()
-ae.add(Dense(2048, activation='relu', input_shape=(input_shape,)))
-ae.add(Dense(1024, activation='relu'))
-ae.add(Dense(3,  activation='softmax', name="out_layer"))
-ae.compile(loss= 'categorical_crossentropy',
+nn = Sequential()
+nn.add(Dense(2048, activation='relu', input_shape=(input_shape,)))
+nn.add(Dense(512, activation='relu'))
+nn.add(Dense(3,  activation='softmax', name="out_layer"))
+nn.compile(loss= 'categorical_crossentropy',
            optimizer='adam',
            metrics=['mean_squared_logarithmic_error'])
 
@@ -56,13 +56,13 @@ y_train = np_utils.to_categorical(y_train)
 y_test = np_utils.to_categorical(y_test)
 y_test_onehot = y_test.copy()
 
-ae.fit(x_train, y_train,
+history = nn.fit(x_train, y_train,
                  batch_size=196,
                  epochs=50,
 								 verbose=2,
                  validation_data=(x_test, y_test))
 
-predicted = ae.predict(x_test)
+predicted = nn.predict(x_test)
 predicted = np.argmax(predicted, axis=1)
 y_test = np.argmax(y_test, axis=1)
 
