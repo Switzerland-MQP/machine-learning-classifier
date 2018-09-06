@@ -7,6 +7,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import TruncatedSVD
+from sklearn.pipeline import Pipeline
 
 from sklearn.metrics import fbeta_score, confusion_matrix 
 
@@ -24,33 +25,23 @@ from keras.utils import np_utils
 
 documents = load_files('../TEXTDATA/', shuffle=False)
 
-# Split remainder into training and testing
-X_train, X_test, y_train, y_test = train_test_split(
-    documents.data, documents.target, test_size=0.20
+preprocessing = Pipeline([('count', CountVectorizer(ngram_range=(1,3))),
+												  ('tfidf', TfidfTransformer()),
+													('pca', TruncatedSVD(n_components=800))])
+data = preprocessing.fit_transform(documents.data)
+
+x_train, x_test, y_train, y_test = train_test_split(
+    data, documents.target, test_size=0.2
 )
 
-
-count_vect = CountVectorizer()
-X_train_count = count_vect.fit_transform(X_train)
-
-tfidf_transformer = TfidfTransformer()
-X_train_tfidf = tfidf_transformer.fit_transform(X_train_count)
-
-# Test data transformations
-X_test_count = count_vect.transform(X_test)
-X_test_tfidf = tfidf_transformer.transform(X_test_count)
-
-pca = TruncatedSVD(n_components=800)
-X_train_pca = pca.fit_transform(X_train_tfidf)
-X_test_pca = pca.transform(X_test_tfidf)
+print("Finished data preprocessing - {} elapsed".format(time.time()-start))
 
 
-input_shape = X_train_pca.shape[1]
+input_shape = x_train.shape[1]
 
 
 ae = Sequential()
-ae.add(Dense(8192, activation='relu', input_shape=(input_shape,),
-					activity_regularizer=l1(10e-6)))
+ae.add(Dense(2048, activation='relu', input_shape=(input_shape,)))
 #ae.add(Dense(64, activation='relu', name="bottleneck", input_shape=(input_shape,),
 #					activity_regularizer=l1(10e-6)))
 #ae.add(Dense(512,  activation='relu'))
@@ -66,13 +57,13 @@ y_train = np_utils.to_categorical(y_train)
 y_test = np_utils.to_categorical(y_test)
 y_test_onehot = y_test.copy()
 
-ae.fit(X_train_pca, y_train,
+ae.fit(x_train, y_train,
                  batch_size=196,
                  epochs=50,
 								 verbose=2,
-                 validation_data=(X_test_pca, y_test))
+                 validation_data=(x_test, y_test))
 
-predicted = ae.predict(X_test_pca)
+predicted = ae.predict(x_test)
 predicted = np.argmax(predicted, axis=1)
 y_test = np.argmax(y_test, axis=1)
 
