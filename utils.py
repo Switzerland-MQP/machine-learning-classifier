@@ -60,12 +60,10 @@ def classify_doc(target_array):
 
 
 def convert_categories(categories):
-    for c in sensitive_categories:
-        if c in categories:
-            return 2
-    for c in personal_categories:
-        if c in categories:
-            return 1
+    category_list = ['phone']
+    for c in range(len(category_list)):
+        if category_list[c] in categories:
+            return c+1
     return 0
 
 

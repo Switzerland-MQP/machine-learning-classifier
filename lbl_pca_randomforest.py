@@ -43,20 +43,21 @@ text_clf = Pipeline([('vect', CountVectorizer()),
 
 param_distributions = {
     "vect__ngram_range": [(1, 3)],
-    "pca__n_components": sp_randint(20, 4000),
+    "pca__n_components": sp_randint(20, 400),
     "clf__n_estimators": sp_randint(100, 2000),
     "clf__max_features": sp_randint(1, 8),
     "clf__min_samples_leaf": sp_randint(1, 6),
     "clf__class_weight": [
-        {0: 1, 1: 1.5, 2: 1.75},
-        {0: 1, 1: 2, 2: 3},
-        {0: 1, 1: 3, 2: 5},
+        {0: 1, 1: 1},
+        {0: 1, 1: 1.5},
+        {0: 1, 1: 2},
+        {0: 1, 1: 3},
     ],
     "clf__criterion": ["entropy", "gini"]
 }
 
 
-n_iter_search = 50
+n_iter_search = 15
 random_search = RandomizedSearchCV(
     text_clf,
     param_distributions=param_distributions,
