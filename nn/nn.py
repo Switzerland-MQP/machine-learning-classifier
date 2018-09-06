@@ -44,7 +44,9 @@ input_shape = x_train.shape[1]
 
 nn = Sequential()
 nn.add(Dense(2048, activation='relu', input_shape=(input_shape,)))
+nn.add(Dropout(0.5))
 nn.add(Dense(512, activation='relu'))
+nn.add(Dropout(0.5))
 nn.add(Dense(3,  activation='softmax', name="out_layer"))
 nn.compile(loss= 'categorical_crossentropy',
            optimizer='adam',
@@ -87,8 +89,11 @@ print("F-2 scores: {}  | Average: {}".format(f2_scores, np.mean(f2_scores)))
 
 print("Confusion matrix: \n{}".format(confusion_matrix(y_test, predicted)))
 
-
-
+import matplotlib.pyplot as plt
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.legend(['train','test'], loc='upper left')
+plt.show()
 
 
 
