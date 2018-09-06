@@ -13,7 +13,7 @@ from sklearn.metrics import fbeta_score, confusion_matrix
 
 
 from keras.models import Sequential, Model
-from keras.layers import Dense
+from keras.layers import Dense, Dropout
 from keras.regularizers import l1
 
 from keras import backend as K
@@ -24,15 +24,17 @@ from keras.utils import np_utils
 
 
 documents = load_files('../TEXTDATA/', shuffle=False)
-
-preprocessing = Pipeline([('count', CountVectorizer(ngram_range=(1,3))),
-												  ('tfidf', TfidfTransformer()),
-													('pca', TruncatedSVD(n_components=800))])
-data = preprocessing.fit_transform(documents.data)
-
 x_train, x_test, y_train, y_test = train_test_split(
-    data, documents.target, test_size=0.2
+    documents.data, documents.target, test_size=0.3
 )
+
+preprocessing = Pipeline([('count', CountVectorizer()),
+												  ('tfidf', TfidfTransformer()),
+													('pca', TruncatedSVD(n_components=400))])
+preprocessing.fit(x_train)
+x_train, x_test = (preprocessing.transform(x_train), preprocessing.transform(x_test))
+
+
 
 print("Finished data preprocessing - {} elapsed".format(time.time()-start))
 
@@ -42,10 +44,7 @@ input_shape = x_train.shape[1]
 
 ae = Sequential()
 ae.add(Dense(2048, activation='relu', input_shape=(input_shape,)))
-#ae.add(Dense(64, activation='relu', name="bottleneck", input_shape=(input_shape,),
-#					activity_regularizer=l1(10e-6)))
-#ae.add(Dense(512,  activation='relu'))
-#ae.add(Dense(1024, activation='relu', input_shape=(input_shape,)))
+ae.add(Dense(1024, activation='relu'))
 ae.add(Dense(3,  activation='softmax', name="out_layer"))
 ae.compile(loss= 'categorical_crossentropy',
            optimizer='adam',
