@@ -18,15 +18,22 @@ from sklearn.linear_model import SGDClassifier
 
 from sklearn import metrics
 
-documents = load_files('TEXTDATA/', shuffle=True)
+
+documents = load_files('../TEXTDATA/', shuffle=False)
+
+
+data = np.load('autoencoded_data.npz')
+x = data['x']
+y = data['y']
+
 X_train, X_test, y_train, y_test = train_test_split(
-    documents.data, documents.target, test_size=0.20
+    x, y, test_size=0.30
 )
 
-text_clf = Pipeline([('vect', CountVectorizer(ngram_range=(1, 3))),
-                    ('tfidf', TfidfTransformer()),
-										('pca', TruncatedSVD(n_components=200)),
-                    ('clf', SGDClassifier(loss='hinge', penalty='none', learning_rate='optimal', alpha=1e-4, epsilon=0.1, max_iter=1000, tol=None, shuffle=True)),
+#import code
+#code.interact(local=locals())
+
+text_clf = Pipeline([('clf', SGDClassifier(loss='hinge', penalty='none', learning_rate='optimal', alpha=1e-4, epsilon=0.1, max_iter=1000, tol=None, shuffle=True)),
 ])
 
 
