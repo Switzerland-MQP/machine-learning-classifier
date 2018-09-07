@@ -28,9 +28,9 @@ x_train, x_test, y_train, y_test = train_test_split(
     documents.data, documents.target, test_size=0.3
 )
 
-preprocessing = Pipeline([('count', CountVectorizer()),
+preprocessing = Pipeline([('count', CountVectorizer((1,4)),
 												  ('tfidf', TfidfTransformer()),
-													('pca', TruncatedSVD(n_components=400))])
+													('pca', TruncatedSVD(n_components=410))])
 preprocessing.fit(x_train)
 x_train, x_test = (preprocessing.transform(x_train), preprocessing.transform(x_test))
 
@@ -43,7 +43,7 @@ input_shape = x_train.shape[1]
 
 
 nn = Sequential()
-nn.add(Dense(512, activation='relu', input_shape=(input_shape,)))
+nn.add(Dense(1024, activation='relu', input_shape=(input_shape,)))
 nn.add(Dropout(0.5))
 nn.add(Dense(3,  activation='softmax', name="out_layer"))
 nn.compile(loss= 'categorical_crossentropy',
@@ -60,10 +60,10 @@ def fit(batch_size, epochs):
 	return nn.fit(x_train, y_train,
 								batch_size=batch_size,
 								epochs=epochs,
-								verbose=1,
+								verbose=0,
 								validation_data=(x_test, y_test_onehot))
 
-history = fit(196, 40)
+history = fit(196, 100)
 
 
 
@@ -93,11 +93,29 @@ def print_results(predicted, y_test):
 
 print_results(predicted, y_test)
 
+
+####################################
 import matplotlib.pyplot as plt
-plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
-plt.legend(['train','test'], loc='upper left')
-plt.show()
+	
+def show_overfit_plot():
+	plt.plot(history.history['loss'])
+	plt.plot(history.history['val_loss'])
+	plt.legend(['train','test'], loc='upper left')
+	plt.show()
+
+show_overfit_plot()
+
+def show_variance_plot():
+	explained = preprocessing.named_steps['pca'].explained_variance_
+	cumulative = [np.sum(explained[:i]) for i in range(len(explained))]
+	#plt.plot(explained)
+	plt.plot(cumulative)
+	plt.legend(['explained variance','cumulative explained variance'], loc='upper left')
+	plt.show()
+
+
+
+
 
 
 
