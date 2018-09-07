@@ -42,19 +42,18 @@ clf = SGDClassifier(shuffle=True, tol=None, max_iter=1000)
 params = {
  "loss": ["hinge", "log", "modified_huber", "squared_hinge", "perceptron", "squared_loss", "huber"],
  "penalty": ['l1', 'l2', 'none'],
- "class_weight": [{0:1, 1:1.5, 2:1.75}, {0:1, 1:2, 0:3}, {0:1, 1:3, 0:5},"balanced", None],
- "learning_rate": ['optimal']
+ "class_weight": [{0:1, 1:1.5, 2:1.75}, {0:1, 1:2, 0:3}, {0:1, 1:3, 0:5},"balanced", None]
 }
 
 gridsearch_clf = Pipeline([
-	('vect', CountVectorizer()),
+	('vect', CountVectorizer(ngram_range=(1, 2))),
   ('tfidf', TfidfTransformer()),
 	('gridsearch', GridSearchCV(clf, param_grid=params, n_jobs=-1))						
 ])
 
 print("Training Model")
 gridsearch_clf.fit(X_train, y_train)
-print("PCA with random forest")
+print("SGD")
 
 documents_predicted = []
 documents_target = []
