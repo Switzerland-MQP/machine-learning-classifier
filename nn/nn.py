@@ -35,10 +35,10 @@ preprocessing.fit(x_train)
 x_train, x_test = (preprocessing.transform(x_train), preprocessing.transform(x_test))
 """
 
-x_train = np.load('/npy/x_train.npy')
-x_test = np.load('/npy/x_test.npy')
-y_train = np.load('/npy/y_train.npy')
-y_test = np.load('/npy/y_test.npy')
+x_train = np.load('./npy/x_train.npy')
+x_test =  np.load('./npy/x_test.npy')
+y_train = np.load('./npy/y_train.npy')
+y_test =  np.load('./npy/y_test.npy')
 
 print("Finished data preprocessing - {} elapsed".format(time.time()-start))
 
