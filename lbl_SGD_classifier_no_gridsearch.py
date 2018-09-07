@@ -37,9 +37,9 @@ X_test, y_test = utils.convert_docs_to_lines(doc_test)
 
 
 
-text_clf = Pipeline([('vect', CountVectorizer(ngram_range=(1, 3))),
+text_clf = Pipeline([('vect', CountVectorizer(ngram_range=(1, 2))),
                     ('tfidf', TfidfTransformer()),
-										('pca', TruncatedSVD(n_components=200)),
+										
                     ('clf', SGDClassifier(loss='hinge', penalty='none', learning_rate='optimal', alpha=1e-4, epsilon=0.1, max_iter=1000, tol=None, shuffle=True)),
 ])
 
@@ -62,6 +62,10 @@ for doc in doc_test:
 
 
 print("Line by Line ")
+total_accuracy = np.mean(predicted_lines == doc.category)
+print("Total Accuracy:")
+print(total_accuracy)
+
 print("Confusion Matrix: \n{}".format(
     confusion_matrix(all_target_lines, all_predicted_lines)
 ))
@@ -83,7 +87,9 @@ doc_accuracy = fbeta_score(
 )
 
 print("Document Accuracy: {}".format(doc_accuracy))
-
+total_doc_accuracy = np.mean(predicted_doc == doc.targets)
+print("Total Accuracy:")
+print(total_doc_accuracy)
 print("Document Confusion Matrix: \n{}".format(
     confusion_matrix(documents_target, documents_predicted)
 ))
