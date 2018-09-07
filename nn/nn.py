@@ -53,39 +53,45 @@ nn.compile(loss= 'categorical_crossentropy',
 print("Begin fitting network")
 
 y_train = np_utils.to_categorical(y_train)
-y_test = np_utils.to_categorical(y_test)
-y_test_onehot = y_test.copy()
+y_test_onehot = np_utils.to_categorical(y_test)
 
-history = nn.fit(x_train, y_train,
-                 batch_size=196,
-                 epochs=150,
-								 verbose=2,
-                 validation_data=(x_test, y_test))
+def fit(batch_size, epochs):
+	global x_train, y_train, x_test, y_test_onehot
+	return nn.fit(x_train, y_train,
+								batch_size=batch_size,
+								epochs=epochs,
+								verbose=1,
+								validation_data=(x_test, y_test_onehot))
+
+history = fit(196, 40)
+
+
 
 predicted = nn.predict(x_test)
 predicted = np.argmax(predicted, axis=1)
-y_test = np.argmax(y_test, axis=1)
 
 elapsed = time.time() - start
 print("Elapsed time:", elapsed)
 
+def print_results(predicted, y_test):
+	boolean_predicted = predicted.copy()
+	boolean_test = y_test.copy()
+	boolean_predicted[boolean_predicted > 0] = 1
+	boolean_test[boolean_test > 0] = 1
+	boolean_accuracy = np.mean(boolean_predicted == boolean_test)
 
-boolean_predicted = predicted.copy()
-boolean_test = y_test.copy()
-boolean_predicted[boolean_predicted > 0] = 1
-boolean_test[boolean_test > 0] = 1
-boolean_accuracy = np.mean(boolean_predicted == boolean_test)
+	print("Boolean clf accuracy: {}".format(boolean_accuracy))
+	print("Boolean f-2 scores: {}".format(fbeta_score(boolean_test, boolean_predicted, average=None, beta=2)))
 
-print("Boolean clf accuracy: {}".format(boolean_accuracy))
-print("Boolean f-2 scores: {}".format(fbeta_score(boolean_test, boolean_predicted, average=None, beta=2)))
+	print("Classifier accuracy: {}".format(np.mean(predicted == y_test)))
 
-print("Classifier accuracy: {}".format(np.mean(predicted == y_test)))
+	f2_scores = fbeta_score(y_test, predicted, average=None, beta=2)
 
-f2_scores = fbeta_score(y_test, predicted, average=None, beta=2)
+	print("F-2 scores: {}  | Average: {}".format(f2_scores, np.mean(f2_scores)))
 
-print("F-2 scores: {}  | Average: {}".format(f2_scores, np.mean(f2_scores)))
+	print("Confusion matrix: \n{}".format(confusion_matrix(y_test, predicted)))
 
-print("Confusion matrix: \n{}".format(confusion_matrix(y_test, predicted)))
+print_results(predicted, y_test)
 
 import matplotlib.pyplot as plt
 plt.plot(history.history['loss'])
