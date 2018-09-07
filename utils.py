@@ -42,10 +42,13 @@ def fill_docs(documents):
     for doc in documents:
         data = np.array([])
         targets = np.array([])
+        contexts = np.array([])
         for line in doc.lines:
             data = np.append(data, [line.text])
             targets = np.append(targets, [convert_categories(line.categories)])
+            contexts = np.append(contexts, [convert_categories(line.context)])
         doc.data = data
+        doc.contexts = contexts
         doc.targets = targets
         doc.category = classify_doc(targets)
 
@@ -88,13 +91,19 @@ def get_documents_labels(documents):
     return targets
 
 
-def convert_docs_to_lines(documents):
+def convert_docs_to_lines(documents, context=False):
     targets = np.array([])
     data = np.array([])
+    contexts = np.array([])
     for doc in documents:
         targets = np.append(targets, doc.targets)
         data = np.append(data, doc.data)
-    return data, targets
+        contexts = np.append(contexts, doc.contexts)
+
+    if context:
+        return data, targets, contexts
+    else:
+        return data, targets
 
 
 class Document:
@@ -103,4 +112,5 @@ class Document:
         self.lines = lines
         self.data = np.array([])
         self.targets = np.array([])
+        self.contexts = np.array([])
         self.category = -1
