@@ -22,7 +22,7 @@ import numpy as np
 
 from keras.utils import np_utils
 
-
+"""
 documents = load_files('../TEXTDATA/', shuffle=False)
 x_train, x_test, y_train, y_test = train_test_split(
     documents.data, documents.target, test_size=0.3
@@ -33,8 +33,12 @@ preprocessing = Pipeline([('count', CountVectorizer(ngram_range=(1,3))),
 													('pca', TruncatedSVD(n_components=430))])
 preprocessing.fit(x_train)
 x_train, x_test = (preprocessing.transform(x_train), preprocessing.transform(x_test))
+"""
 
-
+x_train = np.load('/npy/x_train.npy')
+x_test = np.load('/npy/x_test.npy')
+y_train = np.load('/npy/y_train.npy')
+y_test = np.load('/npy/y_test.npy')
 
 print("Finished data preprocessing - {} elapsed".format(time.time()-start))
 
@@ -45,8 +49,8 @@ input_shape = x_train.shape[1]
 nn = Sequential()
 nn.add(Dense(16, activation='relu', input_shape=(input_shape,)))
 nn.add(Dropout(0.5))
-nn.add(Dense(8, activation='relu'))
-nn.add(Dropout(0.5)
+#nn.add(Dense(8, activation='relu'))
+#nn.add(Dropout(0.5))
 nn.add(Dense(3,  activation='softmax', name="out_layer"))
 nn.compile(loss= 'categorical_crossentropy',
            optimizer='adam',
