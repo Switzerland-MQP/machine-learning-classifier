@@ -23,9 +23,9 @@ preprocessing = Pipeline([('count', CountVectorizer(ngram_range=(1,3))),
 preprocessing.fit(x_train)
 x_train, x_test = (preprocessing.transform(x_train), preprocessing.transform(x_test))
 
-np.save('./npy/x_train.npy', x_train)
-np.save('./npy/y_train.npy', y_train)
-np.save('./npy/x_test.npy', x_test)
-np.save('./npy/y_test.npy', y_test)
+np.save('./npy/2/x_train.npy', x_train)
+np.save('./npy/2/y_train.npy', y_train)
+np.save('./npy/2/x_test.npy', x_test)
+np.save('./npy/2/y_test.npy', y_test)
 print("Saved preprocessed files!")
 

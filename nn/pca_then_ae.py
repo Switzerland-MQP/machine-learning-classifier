@@ -88,24 +88,14 @@ ae_history = ae.fit(x_train, x_train,
                  epochs=200,
 								 verbose=0,
                  validation_data=(x_test, x_test))
-
 x_train, x_test = (encoder.predict(x_train), encoder.predict(x_test))
-
-print("Validation loss: {}".format(ae_history.history["val_loss"][-1]))
-show_overfit_plot(ae_history)
-
-
-print("Finished data preprocessing - {} elapsed".format(time.time()-start))
-quit()
-
-
 
 input_shape = x_train.shape[1]
 
 
 nn = Sequential()
-nn.add(Dense(1024, activation='relu', input_shape=(input_shape,)))
-nn.add(Dropout(0.5))
+nn.add(Dense(256, activation='relu', input_shape=(input_shape,)))
+nn.add(Dropout(0.2))
 nn.add(Dense(3,  activation='softmax', name="out_layer"))
 nn.compile(loss= 'categorical_crossentropy',
            optimizer='adam',
@@ -124,8 +114,8 @@ def fit(batch_size, epochs):
 								verbose=0,
 								validation_data=(x_test, y_test_onehot))
 
-history = fit(196, 150)
-
+history = fit(196, 600)
+print("Val Loss:{}".format(history.history['val_loss'][-1]))
 
 
 predicted = nn.predict(x_test)

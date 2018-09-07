@@ -35,10 +35,10 @@ preprocessing.fit(x_train)
 x_train, x_test = (preprocessing.transform(x_train), preprocessing.transform(x_test))
 """
 
-x_train = np.load('./npy/x_train.npy')
-x_test =  np.load('./npy/x_test.npy')
-y_train = np.load('./npy/y_train.npy')
-y_test =  np.load('./npy/y_test.npy')
+x_train = np.load('./npy/2/x_train.npy')
+x_test =  np.load('./npy/2/x_test.npy')
+y_train = np.load('./npy/2/y_train.npy')
+y_test =  np.load('./npy/2/y_test.npy')
 
 print("Finished data preprocessing - {} elapsed".format(time.time()-start))
 
@@ -48,7 +48,7 @@ input_shape = x_train.shape[1]
 
 nn = Sequential()
 nn.add(Dense(16, activation='relu', input_shape=(input_shape,)))
-nn.add(Dropout(0.5))
+nn.add(Dropout(0.25))
 #nn.add(Dense(8, activation='relu'))
 #nn.add(Dropout(0.5))
 nn.add(Dense(3,  activation='softmax', name="out_layer"))
@@ -69,7 +69,7 @@ def fit(batch_size, epochs):
 								verbose=0,
 								validation_data=(x_test, y_test_onehot))
 
-history = fit(196, 300)
+history = fit(196, 500)
 
 
 
