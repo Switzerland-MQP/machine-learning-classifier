@@ -28,25 +28,48 @@ x_train, x_test, y_train, y_test = train_test_split(
     documents.data, documents.target, test_size=0.3
 )
 
-preprocessing = Pipeline([('count', CountVectorizer(ngram_range=(1,3))),
+preprocessing = Pipeline([('count', CountVectorizer()),
 												  ('tfidf', TfidfTransformer()),
-													('pca', TruncatedSVD(n_components=430))])
+													('pca', TruncatedSVD(n_components=1000))])
 preprocessing.fit(x_train)
 x_train, x_test = (preprocessing.transform(x_train), preprocessing.transform(x_test))
+
+def create_autoencoder():
+	ae = Sequential()
+	ae.add(Dense(64, activation='relu', name="bottleneck", input_shape=(input_shape,)))
+	ae.add(Dense(input_shape,  activation='relu', name="out_layer"))
+	ae.compile(loss= 'mean_squared_error',
+           optimizer='adam',
+           metrics=['mean_squared_logarithmic_error'])
+
+	encoder = Model(ae.input, ae.get_layer('bottleneck').output)
+	
+	return (ae, encoder)
+
+ae, encoder = create_autoencoder()
+
+ae_history = ae.fit(x_train, x_train,
+                 batch_size=196,
+                 epochs=9,
+                 validation_data=(x_test, x_test))
+
+x_train, x_test = (encoder.predict(x_train), encoder.predict(x_test))
+
+
 
 
 
 print("Finished data preprocessing - {} elapsed".format(time.time()-start))
 
 
+
+
 input_shape = x_train.shape[1]
 
 
 nn = Sequential()
-nn.add(Dense(16, activation='relu', input_shape=(input_shape,)))
+nn.add(Dense(32, activation='relu', input_shape=(input_shape,)))
 nn.add(Dropout(0.5))
-nn.add(Dense(8, activation='relu'))
-nn.add(Dropout(0.5)
 nn.add(Dense(3,  activation='softmax', name="out_layer"))
 nn.compile(loss= 'categorical_crossentropy',
            optimizer='adam',
@@ -65,7 +88,7 @@ def fit(batch_size, epochs):
 								verbose=0,
 								validation_data=(x_test, y_test_onehot))
 
-history = fit(196, 300)
+history = fit(196, 150)
 
 
 
@@ -99,13 +122,13 @@ print_results(predicted, y_test)
 ####################################
 import matplotlib.pyplot as plt
 	
-def show_overfit_plot():
+def show_overfit_plot(history):
 	plt.plot(history.history['loss'])
 	plt.plot(history.history['val_loss'])
 	plt.legend(['train','test'], loc='upper left')
 	plt.show()
 
-show_overfit_plot()
+show_overfit_plot(history)
 
 def show_variance_plot():
 	explained = preprocessing.named_steps['pca'].explained_variance_
@@ -114,17 +137,4 @@ def show_variance_plot():
 	plt.plot(cumulative)
 	plt.legend(['explained variance','cumulative explained variance'], loc='upper left')
 	plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
 
