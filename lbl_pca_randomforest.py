@@ -23,7 +23,7 @@ documents = utils.load_dirs_custom([
     './TEXTDATA/SENSITIVE_DATA/html-tagged',
     './TEXTDATA/PERSONAL_DATA/html-tagged',
     './TEXTDATA/NON_PERSONAL_DATA'
-])
+], individual=True)
 
 doc_train, doc_test, = utils.document_test_train_split(
     documents, 0.20
@@ -47,16 +47,16 @@ param_distributions = {
     "clf__n_estimators": sp_randint(100, 2000),
     "clf__max_features": sp_randint(1, 8),
     "clf__min_samples_leaf": sp_randint(1, 6),
-    "clf__class_weight": [
-        {0: 1, 1: 1.5, 2: 1.75},
-        {0: 1, 1: 2, 2: 3},
-        {0: 1, 1: 3, 2: 5},
-    ],
+    #  "clf__class_weight": [
+        #  {0: 1, 1: 1.5, 2: 1.75},
+        #  {0: 1, 1: 2, 2: 3},
+        #  {0: 1, 1: 3, 2: 5},
+    #  ],
     "clf__criterion": ["entropy", "gini"]
 }
 
 
-n_iter_search = 50
+n_iter_search = 2
 random_search = RandomizedSearchCV(
     text_clf,
     param_distributions=param_distributions,

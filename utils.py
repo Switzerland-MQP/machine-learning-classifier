@@ -17,10 +17,10 @@ sensitive_categories = [
 ]
 
 
-def load_dirs_custom(directories):
+def load_dirs_custom(directories, individual):
     all_documents = []
     for d in directories:
-        all_documents += load_dir_custom(d)
+        all_documents += load_dir_custom(d, individual)
     return all_documents
 
 
@@ -32,21 +32,29 @@ def document_test_train_split(documents, test_size):
     return doc_train, doc_test
 
 
-def load_dir_custom(directory):
+def load_dir_custom(directory, individual):
     documents = read_dir(directory)
-    fill_docs(documents)
+    print("Test1")
+    fill_docs(documents, individual)
+    print("Test2")
     return documents
 
 
-def fill_docs(documents):
+def fill_docs(documents, individual=False):
     for doc in documents:
         data = np.array([])
         targets = np.array([])
         contexts = np.array([])
         for line in doc.lines:
             data = np.append(data, [line.text])
-            targets = np.append(targets, [convert_categories(line.categories)])
-            contexts = np.append(contexts, [convert_categories(line.context)])
+            targets = np.append(
+                targets,
+                [convert_categories(line.categories, individual)]
+            )
+            contexts = np.append(
+                contexts,
+                [convert_categories(line.context, individual)]
+            )
         doc.data = data
         doc.contexts = contexts
         doc.targets = targets
@@ -62,7 +70,22 @@ def classify_doc(target_array):
         return 0
 
 
-def convert_categories(categories):
+def convert_categories(categories, individual):
+    if individual:
+        return convert_categories_individual(categories)
+    else:
+        return convert_categories_buckets(categories)
+
+
+def convert_categories_individual(categories):
+    category_list = ['phone']
+    for c in range(len(category_list)):
+        if category_list[c] in categories:
+            return c+1
+    return 0
+
+
+def convert_categories_buckets(categories):
     for c in sensitive_categories:
         if c in categories:
             return 2
