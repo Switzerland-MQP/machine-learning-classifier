@@ -19,18 +19,21 @@ from sklearn.pipeline import Pipeline
 import utils
 
 
+print("---Loading Data---")
 documents = utils.load_dirs_custom([
     './TEXTDATA/SENSITIVE_DATA/html-tagged',
     './TEXTDATA/PERSONAL_DATA/html-tagged',
     './TEXTDATA/NON_PERSONAL_DATA'
-], individual=True)
+])
+
+print("---Creating N_grams---")
+documents = utils.n_gram_documents(documents, 2)
+
 
 doc_train, doc_test, = utils.document_test_train_split(
     documents, 0.20
 )
 
-print("Doc train: ", len(doc_train))
-print("Doc test: ", len(doc_test))
 X_train, y_train = utils.convert_docs_to_lines(doc_train)
 X_test, y_test = utils.convert_docs_to_lines(doc_test)
 
@@ -64,6 +67,7 @@ random_search = RandomizedSearchCV(
     n_jobs=-1
 )
 
+print("---Fitting model---")
 random_search.fit(X_train, y_train)
 
 

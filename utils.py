@@ -17,7 +17,7 @@ sensitive_categories = [
 ]
 
 
-def load_dirs_custom(directories, individual):
+def load_dirs_custom(directories, individual=False):
     all_documents = []
     for d in directories:
         all_documents += load_dir_custom(d, individual)
@@ -34,9 +34,7 @@ def document_test_train_split(documents, test_size):
 
 def load_dir_custom(directory, individual):
     documents = read_dir(directory)
-    print("Test1")
     fill_docs(documents, individual)
-    print("Test2")
     return documents
 
 
@@ -127,6 +125,30 @@ def convert_docs_to_lines(documents, context=False):
         return data, targets, contexts
     else:
         return data, targets
+
+
+def n_gram_documents(docs, n):
+    for d in docs:
+        n_gram_document(d, n)
+    return docs
+
+
+def n_gram_document(doc, n):
+    data, targets = n_grams(doc.data, doc.targets, n)
+    doc.data = data
+    doc.targets = targets
+
+    return doc
+
+
+def n_grams(data_array, target_array, n):
+    grams = np.array([])
+    targets = np.array([])
+    for i in range(len(data_array) - n + 1):
+        new_str = '\n'.join(data_array[i:i+n])
+        grams = np.append(grams, [new_str])
+        targets = np.append(targets, [max(target_array[i:i+n])])
+    return grams, targets
 
 
 class Document:
