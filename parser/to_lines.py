@@ -55,6 +55,10 @@ def append_document(string, categories=[], context=[]):
 
 	for c in string:
 		if c == '\n':
+			#Don't add the current line if it's empty
+			if len(line.text) < 2:
+				document.pop()
+
 			line = Line()
 			document.append(line)
 		
