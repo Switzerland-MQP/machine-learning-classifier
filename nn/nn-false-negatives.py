@@ -22,23 +22,28 @@ import numpy as np
 
 from keras.utils import np_utils
 
-"""
-documents = load_files('../TEXTDATA/', shuffle=False)
+documents = load_files('../TAGGED_DATA_COPY/', shuffle=False)
+target = list(zip(documents.filenames, documents.target))
+
 x_train, x_test, y_train, y_test = train_test_split(
-    documents.data, documents.target, test_size=0.3
+    documents.data, target, test_size=0.3
 )
 
-preprocessing = Pipeline([('count', CountVectorizer(ngram_range=(1,3))),
+y_train = np.array([b for a, b in y_train])
+
+y_test_filenames = [a for a, b in y_test]
+y_test = np.array([b for a, b in y_test])
+
+x_test_copy = x_test.copy()
+
+
+
+
+preprocessing = Pipeline([('count', CountVectorizer()),
 												  ('tfidf', TfidfTransformer()),
 													('pca', TruncatedSVD(n_components=430))])
 preprocessing.fit(x_train)
 x_train, x_test = (preprocessing.transform(x_train), preprocessing.transform(x_test))
-"""
-
-x_train = np.load('./npy/2/x_train.npy')
-x_test =  np.load('./npy/2/x_test.npy')
-y_train = np.load('./npy/2/y_train.npy')
-y_test =  np.load('./npy/2/y_test.npy')
 
 print("Finished data preprocessing - {} elapsed".format(time.time()-start))
 
@@ -96,6 +101,17 @@ def print_results(predicted, y_test):
 	print("F-2 scores: {}  | Average: {}".format(f2_scores, np.mean(f2_scores)))
 
 	print("Confusion matrix: \n{}".format(confusion_matrix(y_test, predicted)))
+
+	d = ['non-personal', 'personal', 'sensitive']
+
+	for expected in [0, 1, 2]:
+		for predicted_ in [0, 1, 2]:
+			for i in range(len(predicted)):
+				if y_test[i] == expected and predicted[i] != y_test[i] and predicted[i] == predicted_:
+					print("Expected {} but got {}".format(d[expected], d[predicted[i]]))
+					print("Misclassified document: {}\n".format(y_test_filenames[i][20:]))
+
+
 
 print_results(predicted, y_test)
 

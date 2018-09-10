@@ -80,7 +80,7 @@ print("Confusion Matrix: \n{}".format(confusion_matrix(y_test, predicted)))
 
 documents_predicted = []
 documents_target = []
-for doc in documents:
+for doc in doc_test:
     document_count = count_vect.transform(doc.data)
     document_tfidf = tfidf_transformer.transform(document_count)
     document_pca = pca.transform(document_tfidf)

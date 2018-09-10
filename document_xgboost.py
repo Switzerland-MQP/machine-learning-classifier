@@ -35,7 +35,7 @@ X_train_count = count_vect.fit_transform(X_train)
 tfidf_transformer = TfidfTransformer()
 X_train_tfidf = tfidf_transformer.fit_transform(X_train_count)
 
-pca = TruncatedSVD(n_components=20)
+pca = TruncatedSVD(n_components=200)
 pca.fit(X_train_tfidf)
 
 X_train_pca = pca.transform(X_train_tfidf)
