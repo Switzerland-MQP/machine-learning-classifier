@@ -17,10 +17,10 @@ sensitive_categories = [
 ]
 
 
-def load_dirs_custom(directories):
+def load_dirs_custom(directories, individual=False):
     all_documents = []
     for d in directories:
-        all_documents += load_dir_custom(d)
+        all_documents += load_dir_custom(d, individual)
     return all_documents
 
 
@@ -32,21 +32,27 @@ def document_test_train_split(documents, test_size):
     return doc_train, doc_test
 
 
-def load_dir_custom(directory):
+def load_dir_custom(directory, individual):
     documents = read_dir(directory)
-    fill_docs(documents)
+    fill_docs(documents, individual)
     return documents
 
 
-def fill_docs(documents):
+def fill_docs(documents, individual=False):
     for doc in documents:
         data = np.array([])
         targets = np.array([])
         contexts = np.array([])
         for line in doc.lines:
             data = np.append(data, [line.text])
-            targets = np.append(targets, [convert_categories(line.categories)])
-            contexts = np.append(contexts, [convert_categories(line.context)])
+            targets = np.append(
+                targets,
+                [convert_categories(line.categories, individual)]
+            )
+            contexts = np.append(
+                contexts,
+                [convert_categories(line.context, individual)]
+            )
         doc.data = data
         doc.contexts = contexts
         doc.targets = targets
@@ -54,15 +60,25 @@ def fill_docs(documents):
 
 
 def classify_doc(target_array):
-    if 2 in target_array:
-        return 2
-    elif 1 in target_array:
-        return 1
+    return max(target_array)
+
+
+def convert_categories(categories, individual):
+    if individual:
+        return convert_categories_individual(categories)
     else:
-        return 0
+        return convert_categories_buckets(categories)
 
 
-def convert_categories(categories):
+def convert_categories_individual(categories):
+    category_list = ['phone']
+    for c in range(len(category_list)):
+        if category_list[c] in categories:
+            return c+1
+    return 0
+
+
+def convert_categories_buckets(categories):
     for c in sensitive_categories:
         if c in categories:
             return 2
@@ -104,6 +120,30 @@ def convert_docs_to_lines(documents, context=False):
         return data, targets, contexts
     else:
         return data, targets
+
+
+def n_gram_documents(docs, n):
+    for d in docs:
+        n_gram_document(d, n)
+    return docs
+
+
+def n_gram_document(doc, n):
+    data, targets = n_grams(doc.data, doc.targets, n)
+    doc.data = data
+    doc.targets = targets
+
+    return doc
+
+
+def n_grams(data_array, target_array, n):
+    grams = np.array([])
+    targets = np.array([])
+    for i in range(len(data_array) - n + 1):
+        new_str = '\n'.join(data_array[i:i+n])
+        grams = np.append(grams, [new_str])
+        targets = np.append(targets, [max(target_array[i:i+n])])
+    return grams, targets
 
 
 class Document:
