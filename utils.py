@@ -60,12 +60,7 @@ def fill_docs(documents, individual=False):
 
 
 def classify_doc(target_array):
-    if 2 in target_array:
-        return 2
-    elif 1 in target_array:
-        return 1
-    else:
-        return 0
+    return max(target_array)
 
 
 def convert_categories(categories, individual):
