@@ -73,7 +73,7 @@ def create_model():
 	#nn.add(Dropout(0.5))
 	nn.add(Dense(3,  activation='softmax', name="out_layer"))
 	#nn.compile(loss= 'categorical_crossentropy',
-	nn.compile(loss=mse, optimizer='adam')
+	nn.compile(loss='mean_squared_error', optimizer='adam')
 	return nn
 
 print("Begin fitting network")
