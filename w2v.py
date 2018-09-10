@@ -15,6 +15,7 @@ from scipy.stats import randint as sp_randint
 import re
 # Models to try
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import SGDClassifier
 import math
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
@@ -74,15 +75,12 @@ def document_to_sentences(document, tokenizer, remove_stopwords=True):
 
 
 train_sentences = []  # Initialize an empty list of sentences
-'''
+
 for root, dirs, files in os.walk('./TEXTDATA'):
     for file in files:
         full_path = root + '/' + file
         with open(full_path) as f:
             train_sentences += document_to_sentences(f.read(), tokenizer)
-'''
-for document in X_train:
-    train_sentences += document_to_sentences(document, tokenizer)
 
 model_name = 'train_model'
 # Set values for various word2vec parameters
@@ -101,8 +99,8 @@ if not os.path.exists(model_name):
     # init_sims will make the model much more memory-efficient.
     model.init_sims(replace=True)
 
-    # It can be helpful to create a meaningful model name and 
-    # save the model for later use. You can load it later using Word2Vec.load()
+# It can be helpful to create a meaningful model name and 
+# save the model for later use. You can load it later using Word2Vec.load()
     model.save(model_name)
 else:
     model = Word2Vec.load(model_name)
@@ -123,7 +121,10 @@ def make_feature_vec(words, model, num_features):
         if word in index2word_set: 
             nwords = nwords + 1
             feature_vec = np.add(feature_vec,model[word])
-    feature_vec = np.divide(feature_vec, nwords)
+    if(nwords != 0):
+        feature_vec = np.divide(feature_vec, nwords)
+    else:
+        feature_vec = np.divide(feature_vec, 1)
     return feature_vec
 
 
@@ -155,25 +156,69 @@ testDataVecs = get_avg_feature_vecs(clean_test_documents, model, num_features)
 # ======================================================================================
 
 # Fit a random forest to the training data, using 100 trees
-forest = RandomForestClassifier(n_estimators = 100)
+# forest = RandomForestClassifier(n_estimators = 10)
 
 # This was to help with the NaN values apparently
 trainDataVecs = Imputer().fit_transform(trainDataVecs)
 
-print("Fitting a random forest to labeled training data...")
-forest = forest.fit(trainDataVecs, X_train)
+#print("Fitting a random forest to labeled training data...")
+#forest = forest.fit(trainDataVecs, X_train)
 
-print("Predicting labels for test data..")
-result = forest.predict(testDataVecs)
+#print("Predicting labels for test data..")
+#result = forest.predict(testDataVecs)
 
-print(classification_report(X_test, result))
+#print(classification_report(X_test, result))
 
-# print(X_train)
-print('============')
-# print(X_test)
-print('============')
-# print(trainDataVecs)
-print('============')
-# print(testDataVecs)
-print('============')
-print('help me good lord and savior')
+clf = SGDClassifier(shuffle=True, tol=None, max_iter=1000, loss='hinge', penalty='l2', class_weight='balanced')
+
+params = {
+ "loss": ["hinge", "log", "modified_huber", "squared_hinge", "perceptron", "squared_loss", "huber"],
+ "penalty": ['l1', 'l2', 'none'],
+ "class_weight": [{0:1, 1:1.5, 2:1.75}, {0:1, 1:2, 0:3}, {0:1, 1:3, 0:5},"balanced", None]}
+					
+
+
+print("Training Model")
+clf.fit(trainDataVecs, X_train)
+print("SGD")
+
+documents_predicted = []
+documents_target = []
+all_predicted_lines = []
+all_target_lines = []
+for doc in doc_test:
+    predicted_lines = clf.predict(testDataVecs)
+    all_predicted_lines += list(predicted_lines)
+    all_target_lines += list(doc.targets)
+
+    predicted_doc = utils.classify_doc(predicted_lines)
+    documents_predicted.append(predicted_doc)
+    documents_target.append(doc.category)
+
+
+print("Line by Line ")
+print("Confusion Matrix: \n{}".format(
+    confusion_matrix(all_target_lines, all_predicted_lines)
+))
+
+accuracy = fbeta_score(
+    all_target_lines,
+    all_predicted_lines,
+    average=None,
+    beta=2
+)
+print("Accuracy: {}".format(accuracy))
+
+
+doc_accuracy = fbeta_score(
+    documents_target,
+    documents_predicted,
+    average=None,
+    beta=2
+)
+
+print("Document Accuracy: {}".format(doc_accuracy))
+
+print("Document Confusion Matrix: \n{}".format(
+    confusion_matrix(documents_target, documents_predicted)
+))
