@@ -25,6 +25,8 @@ documents = utils.load_dirs_custom([
     './NON_PERSONAL_DATA'
 ])
 
+documents = utils.n_gram_documents(documents, 2)
+
 doc_train, doc_test, = utils.document_test_train_split(
     documents, 0.20
 )
