@@ -1,3 +1,8 @@
+'''
+Currently does not work. Not sure why as of now
+'''
+
+
 from gensim.test.utils import common_texts, get_tmpfile
 from gensim.models import Word2Vec
 from gensim.models import KeyedVectors
