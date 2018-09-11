@@ -122,18 +122,26 @@ def convert_docs_to_lines(documents, context=False):
         return data, targets
 
 
-def n_gram_documents(docs, n):
+def n_gram_documents_range(docs, low, high):
     for d in docs:
-        n_gram_document(d, n)
+        n_gram_document_range(d, low, high)
     return docs
 
 
-def n_gram_document(doc, n):
-    data, targets = n_grams(doc.data, doc.targets, n)
-    doc.data = data
-    doc.targets = targets
+def n_gram_document_range(doc, low, high):
+    all_data = np.array([])
+    all_target = np.array([])
+    for i in range(low, high+1):
+        data, targets = n_grams(doc.data, doc.targets, i)
+        all_data = np.append(all_data, data)
+        all_target = np.append(all_target, targets)
 
-    return doc
+    doc.data = all_data
+    doc.targets = all_target
+
+
+def n_gram_documents(docs, n):
+    return n_gram_documents_range(docs, n, n)
 
 
 def n_grams(data_array, target_array, n):
