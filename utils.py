@@ -141,17 +141,7 @@ def n_gram_document_range(doc, low, high):
 
 
 def n_gram_documents(docs, n):
-    for d in docs:
-        n_gram_document(d, n)
-    return docs
-
-
-def n_gram_document(doc, n):
-    data, targets = n_grams(doc.data, doc.targets, n)
-    doc.data = data
-    doc.targets = targets
-
-    return doc
+    return n_gram_documents_range(docs, n, n)
 
 
 def n_grams(data_array, target_array, n):
