@@ -20,12 +20,25 @@ from sklearn.pipeline import Pipeline
 from sklearn.linear_model import SGDClassifier
 
 from sklearn import metrics
+import utils
 
+documents = utils.load_dirs_custom([
+    './SENSITIVE_DATA/html-tagged',
+    './PERSONAL_DATA/html-tagged',
+    './NON_PERSONAL_DATA'
+])
 
-documents = load_files('TEXTDATA/', shuffle=True)
-X_train, X_test, y_train, y_test = train_test_split(
-    documents.data, documents.target, test_size=0.20
+documents = utils.n_gram_documents(documents, 2)
+
+doc_train, doc_test, = utils.document_test_train_split(
+    documents, 0.20
 )
+
+print("Doc train: ", len(doc_train))
+print("Doc test: ", len(doc_test))
+X_train, y_train = utils.convert_docs_to_lines(doc_train)
+X_test, y_test = utils.convert_docs_to_lines(doc_test)
+
 
 model = Word2Vec.load('train_model')
 w2v = dict(zip(model.wv.index2word, model.wv.syn0))
@@ -75,33 +88,62 @@ class TfidfEmbeddingVectorizer(object):
             ])
 
 
-pre_fit = TfidfEmbeddingVectorizer(w2v)
-pre_fit.fit(X_train, y_train)
+# pre_fit = TfidfEmbeddingVectorizer(w2v)
+# pre_fit.fit(X_train, y_train)
 
-X_train_w2v = pre_fit.transform(X_train)
-X_test_w2v = pre_fit.transform(X_test)
+# X_train_w2v = pre_fit.transform(X_train)
+# X_test_w2v = pre_fit.transform(X_test)
 
-clf = SGDClassifier(loss='hinge', penalty='none', learning_rate='optimal', alpha=1e-4, epsilon=0.1, max_iter=1000, tol=None, shuffle=True)
+clf = Pipeline([('w2v', TfidfEmbeddingVectorizer(w2v)), ('clf', SGDClassifier(loss='hinge', penalty='none', learning_rate='optimal', alpha=1e-4, epsilon=0.1, max_iter=1000, tol=None, shuffle=True))])
+
+
+clf.fit(X_train, y_train)
 
 print("W2V with SGD")
 
-clf.fit(X_train_w2v, y_train)
-predicted = clf.predict(X_test_w2v)
+documents_predicted = []
+documents_target = []
+all_predicted_lines = []
+all_target_lines = []
+for doc in doc_test:
+    predicted_lines = clf.predict(doc.data)
+    all_predicted_lines += list(predicted_lines)
+    all_target_lines += list(doc.targets)
 
-boolean_predicted = predicted.copy()
-boolean_test = y_test.copy()
-boolean_predicted[boolean_predicted > 0] = 1
-boolean_test[boolean_test > 0] = 1
-boolean_accuracy = np.mean(boolean_predicted == boolean_test)
-
-print("Boolean clf accuracy: {}".format(boolean_accuracy))
-print("Boolean f-2 scores: {}".format(metrics.fbeta_score(boolean_test, boolean_predicted, average=None, beta=2)))
-
-print("Classifier accuracy: {}".format(np.mean(predicted == y_test)))
-
-print("F-2 scores: {}".format(metrics.fbeta_score(y_test, predicted, average=None, beta=2)))
-
-print("Confusion matrix: \n{}".format(metrics.confusion_matrix(y_test, predicted)))
+    predicted_doc = utils.classify_doc(predicted_lines)
+    documents_predicted.append(predicted_doc)
+    documents_target.append(doc.category)
 
 
+print("Line by Line ")
+total_accuracy = np.mean(predicted_lines == doc.category)
+print("Total Accuracy:")
+print(total_accuracy)
 
+print("Confusion Matrix: \n{}".format(
+    confusion_matrix(all_target_lines, all_predicted_lines)
+))
+
+accuracy = fbeta_score(
+    all_target_lines,
+    all_predicted_lines,
+    average=None,
+    beta=2
+)
+print("Accuracy: {}".format(accuracy))
+
+
+doc_accuracy = fbeta_score(
+    documents_target,
+    documents_predicted,
+    average=None,
+    beta=2
+)
+
+print("Document Accuracy: {}".format(doc_accuracy))
+total_doc_accuracy = np.mean(predicted_doc == doc.targets)
+print("Total Accuracy:")
+print(total_doc_accuracy)
+print("Document Confusion Matrix: \n{}".format(
+    confusion_matrix(documents_target, documents_predicted)
+))
