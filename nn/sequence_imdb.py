@@ -2,6 +2,7 @@ import numpy
 from keras.datasets import imdb
 from keras.models import Sequential
 from keras.layers import Dense, LSTM
+from keras.layers.convolutional import Conv1D, MaxPooling1D
 from keras.layers.embeddings import Embedding
 from keras.preprocessing import sequence
 
@@ -20,7 +21,9 @@ embedding_vector_length= 32
 def create_model(top_words, embedding_vector_length, max_length):
 	model = Sequential()
 	model.add(Embedding(top_words, embedding_vector_length, input_length=max_length))
-	model.add(LSTM(100, dropout=0, recurrent_dropout=0))
+	model.add(Conv1D(filters=32, kernel_size=3, padding='same', activation='relu'))
+	model.add(MaxPooling1D(pool_size=2))
+	model.add(LSTM(100, dropout=0.2, recurrent_dropout=0.2))
 	model.add(Dense(1, activation='sigmoid')) #This will need to be 3, softmax
 	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 	# Will need to be categorical_crossentropy
