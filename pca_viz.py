@@ -35,7 +35,9 @@ reducer = Pipeline([('count', CountVectorizer()),
 										('pca', TruncatedSVD(n_components=2))])
 x_train_reduced = reducer.fit_transform(x_train)
 
-colors = np.where(y_train == 0, 'green', 'red')
+colors = []
+for i in range(len(y_train)):
+	colors.append(['green', 'red', 'purple'][y_train[i]])
 
 plt.scatter(x_train_reduced[:,0], x_train_reduced[:,1], c=colors)
 plt.show()
