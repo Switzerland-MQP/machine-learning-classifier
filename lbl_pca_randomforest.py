@@ -27,7 +27,7 @@ documents = utils.load_dirs_custom([
 ])
 
 print("---Creating N_grams---")
-documents = utils.n_gram_documents(documents, 2)
+documents = utils.n_gram_documents_range(documents, 2, 3)
 
 
 doc_train, doc_test, = utils.document_test_train_split(
