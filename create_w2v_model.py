@@ -8,6 +8,7 @@ import numpy as np
 import os
 import nltk
 import pandas as pd
+import re
 #nltk.download('stopwords')
 from nltk.corpus import stopwords
 
@@ -17,7 +18,7 @@ import math
 # Load the punkt tokenizer used for splitting documents into sentences
 tokenizer = nltk.data.load('tokenizers/punkt/german.pickle')
 
-def document_to_word_list(document, remove_stopwords=True):
+def document_to_word_list(document, remove_stopwords=False):
     
     document_text = re.sub("[^a-zA-Z]"," ", document)
     
@@ -30,7 +31,7 @@ def document_to_word_list(document, remove_stopwords=True):
     return words
 
 
-def document_to_sentences(document, tokenizer, remove_stopwords=True):
+def document_to_sentences(document, tokenizer, remove_stopwords=False):
     """
     Split document into list of sentences where each sentence is a list of words.
     Removal of stop words is optional.
@@ -59,7 +60,7 @@ for root, dirs, files in os.walk('./TEXTDATA'):
 model_name = 'train_model'
 # Set values for various word2vec parameters
 num_features = 300    # Word vector dimensionality                      
-min_word_count = 5   # Minimum word count                        
+min_word_count = 1   # Minimum word count                        
 num_workers = 3       # Number of threads to run in parallel
 context = 10          # Context window size
 downsampling = 1e-3   # Downsample setting for frequent words

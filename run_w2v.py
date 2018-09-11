@@ -28,8 +28,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 model = Word2Vec.load('train_model')
-w2v = dict(zip(model.wv.index2word, model.wv.syn0))
-
+w2v = {w: vec for w, vec in zip(model.wv.index2word, model.wv.syn0)}
 
 class MeanEmbeddingVectorizer(object):
     def __init__(self, word2vec):
@@ -102,6 +101,4 @@ print("Classifier accuracy: {}".format(np.mean(predicted == y_test)))
 print("F-2 scores: {}".format(metrics.fbeta_score(y_test, predicted, average=None, beta=2)))
 
 print("Confusion matrix: \n{}".format(metrics.confusion_matrix(y_test, predicted)))
-
-
 
