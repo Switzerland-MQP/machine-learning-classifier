@@ -14,71 +14,77 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import fbeta_score
-
+from sklearn.manifold import Isomap
+from sklearn.manifold import LocallyLinearEmbedding
 from sklearn.pipeline import Pipeline
+from sklearn.linear_model import SGDClassifier
 import utils
+from sklearn.svm import SVC
 
-
-print("---Loading Data---")
 documents = utils.load_dirs_custom([
-    './TEXTDATA/SENSITIVE_DATA/html-tagged',
-    './TEXTDATA/PERSONAL_DATA/html-tagged',
-    './TEXTDATA/NON_PERSONAL_DATA'
+    './SENSITIVE_DATA/html-tagged',
+    './PERSONAL_DATA/html-tagged',
+    './NON_PERSONAL_DATA'
 ])
 
-print("---Creating N_grams---")
-documents = utils.n_gram_documents_range(documents, 2, 3)
-
-
 doc_train, doc_test, = utils.document_test_train_split(
-    documents, 0.20
+    documents, 0.4
 )
+
+print("Doc train: ", len(doc_train))
+print("Doc test: ", len(doc_test))
 
 X_train, y_train = utils.convert_docs_to_lines(doc_train)
 X_test, y_test = utils.convert_docs_to_lines(doc_test)
 
+order = np.arange(len(X_train))
+np.random.shuffle(order)
 
-text_clf = Pipeline([('vect', CountVectorizer()),
+n = 10000
+
+X_train, y_train = (X_train[order][:n], y_train[order][:n])
+
+
+
+'''
+vect = CountVectorizer()
+X_train_count = vect.fit_transform(X_train)
+
+tfidf = TfidfTransformer()
+X_train_tfidf = tfidf.fit_transform(X_train_count)
+pca = TruncatedSVD(n_components=20)
+X_train_pca = pca.fit_transform(X_train_tfidf)
+isomap = LocallyLinearEmbedding(n_neighbors=5, n_components=2)
+LocallyLinearEmbedding.fit(X_train_pca)
+X_train_isomap = LocallyLinearEmbedding.transform(X_train_pca)
+
+X_test_count = vect.transform(X_test)
+
+X_test_tfidf = tfidf.transform(X_test_count)
+X_test_pca = pca.fit(X_test_tfidf)
+X_test_isomap = isomap.transform(X_test_pca)
+
+
+clf = SGDClassifier(loss='hinge', penalty='none', learning_rate='optimal', alpha=1e-4, epsilon=0.1, max_iter=1000, tol=None, shuffle=True)
+'''
+clf = Pipeline([('vect', CountVectorizer()),
                      ('tfidf', TfidfTransformer()),
-                     ('pca', TruncatedSVD(n_components=20)),
-                     ('clf', RandomForestClassifier(n_jobs=-1))
+                     ('pca', TruncatedSVD(n_components=200)),
+                     ('iso', Isomap(n_neighbors=5, n_components=20,)),
+                     ('clf', SVC(kernel='linear', C=1.0, gamma=0.1))
                      ])
 
-param_distributions = {
-    "vect__ngram_range": [(1, 3)],
-    "pca__n_components": sp_randint(20, 400),
-    "clf__n_estimators": sp_randint(100, 2000),
-    "clf__max_features": sp_randint(1, 8),
-    "clf__min_samples_leaf": sp_randint(1, 6),
-    #  "clf__class_weight": [
-        #  {0: 1, 1: 1.5, 2: 1.75},
-        #  {0: 1, 1: 2, 2: 3},
-        #  {0: 1, 1: 3, 2: 5},
-    #  ],
-    "clf__criterion": ["entropy", "gini"]
-}
+clf.fit(X_train, y_train)
 
 
-n_iter_search = 2
-random_search = RandomizedSearchCV(
-    text_clf,
-    param_distributions=param_distributions,
-    n_iter=n_iter_search,
-    n_jobs=-1
-)
-
-print("---Fitting model---")
-random_search.fit(X_train, y_train)
-
-
-print("PCA with random forest")
+print("PCA with Isomaps RBF Kernel SVM")
 
 documents_predicted = []
 documents_target = []
 all_predicted_lines = []
 all_target_lines = []
 for doc in doc_test:
-    predicted_lines = random_search.predict(doc.data)
+    predicted_lines = clf.predict(doc.data)
     all_predicted_lines += list(predicted_lines)
     all_target_lines += list(doc.targets)
 
@@ -113,7 +119,4 @@ print("Document Accuracy: {}".format(doc_accuracy))
 print("Document Confusion Matrix: \n{}".format(
     confusion_matrix(documents_target, documents_predicted)
 ))
-
-utils.label_new_document("./testFile.txt", random_search)
-
 

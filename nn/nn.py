@@ -22,24 +22,24 @@ import numpy as np
 
 from keras.utils import np_utils
 
-"""
 documents = load_files('../TEXTDATA/', shuffle=False)
 x_train, x_test, y_train, y_test = train_test_split(
     documents.data, documents.target, test_size=0.3
 )
 
-preprocessing = Pipeline([('count', CountVectorizer(ngram_range=(1,3))),
+x_test_copy = x_test.copy()
+
+preprocessing = Pipeline([('count', CountVectorizer()), #ngram range 1,3 works best
 												  ('tfidf', TfidfTransformer()),
 													('pca', TruncatedSVD(n_components=430))])
 preprocessing.fit(x_train)
 x_train, x_test = (preprocessing.transform(x_train), preprocessing.transform(x_test))
 """
-
 x_train = np.load('./npy/2/x_train.npy')
 x_test =  np.load('./npy/2/x_test.npy')
 y_train = np.load('./npy/2/y_train.npy')
 y_test =  np.load('./npy/2/y_test.npy')
-
+"""
 print("Finished data preprocessing - {} elapsed".format(time.time()-start))
 
 
@@ -73,8 +73,8 @@ history = fit(196, 500)
 
 
 
-predicted = nn.predict(x_test)
-predicted = np.argmax(predicted, axis=1)
+predicted_vec = nn.predict(x_test)
+predicted = np.argmax(predicted_vec, axis=1)
 
 elapsed = time.time() - start
 print("Elapsed time:", elapsed)
@@ -98,6 +98,56 @@ def print_results(predicted, y_test):
 	print("Confusion matrix: \n{}".format(confusion_matrix(y_test, predicted)))
 
 print_results(predicted, y_test)
+
+## Organise documents by standard deviation
+#Divide each number in predicted_vec by the sum 
+sums = np.sum(predicted_vec, 1)
+divided = (predicted_vec.T/sums).T
+stds = np.std(divided, 1)
+indices = np.argsort(stds)
+
+def smooth(keep, arr):
+	smoothed = []
+	previous = arr[0]
+	for i in range(len(arr)):
+		previous = keep*previous + (1-keep)*arr[i]
+		smoothed.append(previous)
+	return smoothed
+	
+import matplotlib.pyplot as plt
+
+smoothed = smooth(0.91, stds[indices])
+for i in range(len(smoothed)-1):
+	delta = smoothed[i+1] - smoothed[i]
+	print(delta)
+	if delta < 0.001:
+		n = i
+		print("delta found!", delta)
+		break
+
+plt.plot(smooth(0.91, stds[indices]))
+plt.scatter([n], [stds[indices][n]])
+plt.show()
+
+accuracies = []
+for i in range(len(stds[indices])):
+	p = np.argmax(predicted_vec[indices][i:], 1)
+	y = y_test[indices][i:]
+	accuracies.append(np.mean(p == y))
+plt.plot(accuracies)
+plt.show()
+
+
+predicted_vec = predicted_vec[indices][n:]
+y_test_high_confidence = y_test[indices][n:]
+
+predicted_high_confidence = np.argmax(predicted_vec, 1)
+print("High confidence results:")
+print_results(predicted_high_confidence,  y_test_high_confidence)
+
+
+quit()
+
 
 
 ####################################

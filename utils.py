@@ -2,20 +2,42 @@ import numpy as np
 import os
 from parser.run_parser import run_parser
 from sklearn.model_selection import train_test_split
+from bidict import bidict
 import ipdb
 
-personal_categories = [
-    'name', 'id-number', 'location', 'online-id',
-    'dob', 'phone', 'physical', 'physiological',
-    'professional', 'genetic', 'mental', 'economic',
-    'cultural', 'social'
-]
-sensitive_categories = [
-    'criminal', 'origin', 'health',
-    'religion', 'political', 'philosophical',
-    'unions', 'sex-life', 'sex-orientation',
-    'biometric'
-]
+
+personal_categories_dict = bidict({
+    1: 'name',
+    2: 'id-number',
+    3: 'location',
+    4: 'online-id',
+    5: 'dob',
+    6: 'phone',
+    7: 'psychological',
+    8: 'professional',
+    9: 'genetic',
+    10: 'mental',
+    11: 'economic',
+    12: 'cultural',
+    13: 'social'
+})
+
+sensitive_categories_dict = bidict({
+    14: 'criminal',
+    15: 'origin',
+    16: 'health',
+    17: 'religion',
+    18: 'political',
+    19: 'philosophical',
+    20: 'unions',
+    21: 'sex-life',
+    22: 'sex-orientation',
+    23: 'biometric'
+})
+
+all_categories_dict = bidict({-1: 'other_personal'})
+all_categories_dict.putall(personal_categories_dict)
+all_categories_dict.putall(sensitive_categories_dict)
 
 
 def target_to_string(target):
@@ -25,6 +47,10 @@ def target_to_string(target):
         return "personal"
     if target == 0:
         return "nonpersonal"
+
+
+def target_to_string_categories(target):
+    return all_categories_dict[target]
 
 
 def load_dirs_custom(directories, individual=False):
@@ -81,18 +107,21 @@ def convert_categories(categories, individual):
 
 
 def convert_categories_individual(categories):
-    category_list = ['phone']
-    for c in range(len(category_list)):
-        if category_list[c] in categories:
-            return c+1
+    category_list = ['name', 'phone', 'professional']
+    for c in categories:
+        if c in category_list:
+            return all_categories_dict.inv[c]
+        else:
+            return -1
+
     return 0
 
 
 def convert_categories_buckets(categories):
-    for c in sensitive_categories:
+    for c in sensitive_categories_dict:
         if c in categories:
             return 2
-    for c in personal_categories:
+    for c in personal_categories_dict:
         if c in categories:
             return 1
     return 0
@@ -164,21 +193,27 @@ def n_grams(data_array, target_array, n):
     return grams, targets
 
 
-def label_new_document(docpath, clf):
-    with open(docpath, 'r') as f:
-        lines = f.readlines()
+def label_documents_dir(docpath, clf):
+    documents = read_dir(docpath)
+    fill_docs(documents)
+    for doc in documents:
         #  ipdb.set_trace()
-        predicted_lines = clf.predict(lines)
+        label_single_document(doc, clf)
 
-        new_file_name = "{}_automagic.txt".format(docpath)
+
+def label_single_document(doc, clf):
+        predicted_lines = clf.predict(doc.data)
+
+        new_file_name = "AUTOLABELED/{}_automagic.txt".format(
+            os.path.basename(doc.path)
+        )
         out_doc = open(new_file_name, "a")
         for i in range(len(predicted_lines)):
-            format_string = "{}".format(lines[i])
+            format_string = "{}\n".format(doc.data[i])
             if predicted_lines[i] != 0:
-                print("Found label line")
-                format_string = "{}\t\t:::::\t{}".format(
-                    lines[i],
-                    target_to_string(predicted_lines[i])
+                format_string = "{}\t:::::\t{}\n".format(
+                    target_to_string_categories(predicted_lines[i]),
+                    doc.data[i],
                 )
             out_doc.write(format_string)
         out_doc.close()

@@ -33,4 +33,4 @@ textract==1.6.1
 nltk
 gensim
 bokeh
-
+bidict
