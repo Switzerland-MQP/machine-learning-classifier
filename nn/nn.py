@@ -113,6 +113,15 @@ def smooth(keep, arr):
 		previous = keep*previous + (1-keep)*arr[i]
 		smoothed.append(previous)
 	return smoothed
+
+def to_1_interval(arr):
+	minimum = min(arr)
+	maximum = max(arr)
+	new_arr = []
+	for value in arr:
+		new_arr.append((value-minimum)/(maximum-minimum))
+	return new_arr
+
 	
 import matplotlib.pyplot as plt
 
@@ -120,21 +129,19 @@ smoothed = smooth(0.91, stds[indices])
 for i in range(len(smoothed)-1):
 	delta = smoothed[i+1] - smoothed[i]
 	print(delta)
-	if delta < 0.001:
+	if delta < 0.0008:
 		n = i
-		print("delta found!", delta)
+		print(f"delta found! {delta} -- n: {n}")
 		break
-
-plt.plot(smooth(0.91, stds[indices]))
-plt.scatter([n], [stds[indices][n]])
-plt.show()
 
 accuracies = []
 for i in range(len(stds[indices])):
 	p = np.argmax(predicted_vec[indices][i:], 1)
 	y = y_test[indices][i:]
 	accuracies.append(np.mean(p == y))
-plt.plot(accuracies)
+plt.plot(to_1_interval(accuracies))
+plt.plot(to_1_interval(smooth(0.91, stds[indices])))
+#plt.scatter([n], [stds[indices][n]])
 plt.show()
 
 
