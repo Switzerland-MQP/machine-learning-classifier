@@ -125,11 +125,10 @@ def to_1_interval(arr):
 	
 import matplotlib.pyplot as plt
 
-smoothed = smooth(0.91, stds[indices])
+smoothed = smooth(0.96, stds[indices])
 for i in range(len(smoothed)-1):
 	delta = smoothed[i+1] - smoothed[i]
-	print(delta)
-	if delta < 0.0008:
+	if delta < 0.001 and i > 5:
 		n = i
 		print(f"delta found! {delta} -- n: {n}")
 		break
@@ -139,9 +138,11 @@ for i in range(len(stds[indices])):
 	p = np.argmax(predicted_vec[indices][i:], 1)
 	y = y_test[indices][i:]
 	accuracies.append(np.mean(p == y))
-plt.plot(to_1_interval(accuracies))
-plt.plot(to_1_interval(smooth(0.91, stds[indices])))
-#plt.scatter([n], [stds[indices][n]])
+plt.plot(to_1_interval(smooth(0.96, accuracies)))
+plt.plot(to_1_interval(smooth(0.96, stds[indices])))
+#for smoothiness in [0.7, 0.75, 0.8,0.85,0.9,0.925, 0.95]:
+#	plt.plot(smooth(smoothiness,accuracies))
+plt.scatter([n], [to_1_interval(smooth(0.96, stds[indices]))[n]])
 plt.show()
 
 
