@@ -118,3 +118,5 @@ ocr_test/
 
 /TAGGED_DATA/
 /TAGGED_DATA_COPY/
+
+/nn/utils.py
