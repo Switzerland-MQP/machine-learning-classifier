@@ -46,7 +46,7 @@ text_clf = Pipeline([('vect', CountVectorizer()),
 
 param_distributions = {
     "vect__ngram_range": [(1, 3)],
-    "pca__n_components": sp_randint(20, 4000),
+    "pca__n_components": sp_randint(20, 400),
     "clf__n_estimators": sp_randint(100, 2000),
     "clf__max_features": sp_randint(1, 8),
     "clf__min_samples_leaf": sp_randint(1, 6),
@@ -113,4 +113,7 @@ print("Document Accuracy: {}".format(doc_accuracy))
 print("Document Confusion Matrix: \n{}".format(
     confusion_matrix(documents_target, documents_predicted)
 ))
+
+utils.label_new_document("./testFile.txt", random_search)
+
 

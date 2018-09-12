@@ -7,33 +7,37 @@ import ipdb
 
 
 personal_categories_dict = bidict({
-    0: 'name',
-    1: 'id-number',
-    2: 'location',
-    3: 'online-id',
-    4: 'dob',
-    5: 'phone',
-    6: 'psychological',
-    7: 'professional',
-    8: 'genetic',
-    9: 'mental',
-    10: 'economic',
-    11: 'cultural',
-    12: 'social'
+    1: 'name',
+    2: 'id-number',
+    3: 'location',
+    4: 'online-id',
+    5: 'dob',
+    6: 'phone',
+    7: 'psychological',
+    8: 'professional',
+    9: 'genetic',
+    10: 'mental',
+    11: 'economic',
+    12: 'cultural',
+    13: 'social'
 })
 
 sensitive_categories_dict = bidict({
-    13: 'criminal',
-    14: 'origin',
-    15: 'health',
-    16: 'religion',
-    17: 'political',
-    18: 'philosophical',
-    19: 'unions',
-    20: 'sex-life',
-    21: 'sex-orientation',
-    22: 'biometric'
+    14: 'criminal',
+    15: 'origin',
+    16: 'health',
+    17: 'religion',
+    18: 'political',
+    19: 'philosophical',
+    20: 'unions',
+    21: 'sex-life',
+    22: 'sex-orientation',
+    23: 'biometric'
 })
+
+all_categories_dict = bidict({-1: 'other_personal'})
+all_categories_dict.putall(personal_categories_dict)
+all_categories_dict.putall(sensitive_categories_dict)
 
 
 def target_to_string(target):
@@ -46,10 +50,7 @@ def target_to_string(target):
 
 
 def target_to_string_categories(target):
-    if target in personal_categories_dict:
-        return personal_categories_dict[target]
-    if target in sensitive_categories_dict:
-        return sensitive_categories_dict[target]
+    return all_categories_dict[target]
 
 
 def load_dirs_custom(directories, individual=False):
@@ -106,10 +107,13 @@ def convert_categories(categories, individual):
 
 
 def convert_categories_individual(categories):
-    category_list = ['name']
-    for c in range(len(category_list)):
-        if category_list[c] in categories:
-            return c+1
+    category_list = ['name', 'phone', 'professional']
+    for c in categories:
+        if c in category_list:
+            return all_categories_dict.inv[c]
+        else:
+            return -1
+
     return 0
 
 
