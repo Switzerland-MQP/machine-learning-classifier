@@ -120,3 +120,6 @@ ocr_test/
 /TAGGED_DATA_COPY/
 
 /nn/utils.py
+UTOLABELED/
+AUTOLABELED/
+TO_LABEL/
