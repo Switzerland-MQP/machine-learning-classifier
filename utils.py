@@ -2,6 +2,7 @@ import numpy as np
 import os
 from parser.run_parser import run_parser
 from sklearn.model_selection import train_test_split
+import ipdb
 
 personal_categories = [
     'name', 'id-number', 'location', 'online-id',
@@ -15,6 +16,15 @@ sensitive_categories = [
     'unions', 'sex-life', 'sex-orientation',
     'biometric'
 ]
+
+
+def target_to_string(target):
+    if target == 2:
+        return "sensitive"
+    if target == 1:
+        return "personal"
+    if target == 0:
+        return "nonpersonal"
 
 
 def load_dirs_custom(directories, individual=False):
@@ -152,6 +162,26 @@ def n_grams(data_array, target_array, n):
         grams = np.append(grams, [new_str])
         targets = np.append(targets, [max(target_array[i:i+n])])
     return grams, targets
+
+
+def label_new_document(docpath, clf):
+    with open(docpath, 'r') as f:
+        lines = f.readlines()
+        #  ipdb.set_trace()
+        predicted_lines = clf.predict(lines)
+
+        new_file_name = "{}_automagic.txt".format(docpath)
+        out_doc = open(new_file_name, "a")
+        for i in range(len(predicted_lines)):
+            format_string = "{}".format(lines[i])
+            if predicted_lines[i] != 0:
+                print("Found label line")
+                format_string = "{}\t\t:::::\t{}".format(
+                    lines[i],
+                    target_to_string(predicted_lines[i])
+                )
+            out_doc.write(format_string)
+        out_doc.close()
 
 
 class Document:
