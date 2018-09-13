@@ -36,10 +36,12 @@ Common misspellings
 
 def if_misspell_then_replace(word, misspell_array, full_path, filedata, replace_word):
     if word in misspell_array:
-        newdata = filedata.replace(word, replace_word)
+        newdata = re.sub(r'\b'+word+r'\b'.format(word), replace_word, filedata)
         f = open(full_path, 'w')
         f.write(newdata)
         f.close()
+        filedata = newdata
+    return filedata
 
 
 def clean_misspellings_and_standardize(directory):
@@ -67,11 +69,11 @@ def clean_misspellings_and_standardize(directory):
             f.close()
             
             for word in filedata.split():
-                if_misspell_then_replace(word, herr_misspell, full_path, filedata, 'herr')
-                if_misspell_then_replace(word, nationality_missphone, full_path, filedata, 'staatsangehörigkeit')
-                if_misspell_then_replace(word, dob_misspell, full_path, filedata, 'geb.')
-                if_misspell_then_replace(word, phone_misspell, full_path, filedata, 'telefon')
-                if_misspell_then_replace(word, stop_words, full_path, filedata, '')
+                filedata = if_misspell_then_replace(word, herr_misspell, full_path, filedata, 'herr')
+                filedata = if_misspell_then_replace(word, nationality_missphone, full_path, filedata, 'staatsangehörigkeit')
+                filedata = if_misspell_then_replace(word, dob_misspell, full_path, filedata, 'geb.')
+                filedata = if_misspell_then_replace(word, phone_misspell, full_path, filedata, 'telefon')
+                filedata = if_misspell_then_replace(word, stop_words, full_path, filedata, '')
 
 
 clean_misspellings_and_standardize('./PURIFIED_TEXT_DATA')
