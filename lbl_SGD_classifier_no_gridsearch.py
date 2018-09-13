@@ -64,9 +64,6 @@ for doc in doc_test:
 
 
 print("Line by Line ")
-total_accuracy = np.mean(predicted_lines == doc.category)
-print("Total Accuracy:")
-print(total_accuracy)
 
 print("Confusion Matrix: \n{}".format(
     confusion_matrix(all_target_lines, all_predicted_lines)
@@ -89,9 +86,6 @@ doc_accuracy = fbeta_score(
 )
 
 print("Document Accuracy: {}".format(doc_accuracy))
-total_doc_accuracy = np.mean(predicted_doc == doc.targets)
-print("Total Accuracy:")
-print(total_doc_accuracy)
 print("Document Confusion Matrix: \n{}".format(
     confusion_matrix(documents_target, documents_predicted)
 ))
