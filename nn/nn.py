@@ -29,7 +29,7 @@ x_train, x_test, y_train, y_test = train_test_split(
 
 x_test_copy = x_test.copy()
 
-preprocessing = Pipeline([('count', CountVectorizer()), #ngram range 1,3 works best
+preprocessing = Pipeline([('count', CountVectorizer()),
 												  ('tfidf', TfidfTransformer()),
 													('pca', TruncatedSVD(n_components=430))])
 preprocessing.fit(x_train)
@@ -138,13 +138,10 @@ for i in range(len(stds[indices])):
 	p = np.argmax(predicted_vec[indices][i:], 1)
 	y = y_test[indices][i:]
 	accuracies.append(np.mean(p == y))
-plt.plot(to_1_interval(smooth(0.96, accuracies)))
-plt.plot(to_1_interval(smooth(0.96, stds[indices])))
-#for smoothiness in [0.7, 0.75, 0.8,0.85,0.9,0.925, 0.95]:
-#	plt.plot(smooth(smoothiness,accuracies))
-plt.scatter([n], [to_1_interval(smooth(0.96, stds[indices]))[n]])
+plt.plot(to_1_interval(smooth(0.96, accuracies)), c='blue')
+plt.plot(to_1_interval(smooth(0.90, stds[indices])), c='orange')
+#plt.scatter([n], [to_1_interval(smooth(0.90, accuracies))[n]])
 plt.show()
-
 
 predicted_vec = predicted_vec[indices][n:]
 y_test_high_confidence = y_test[indices][n:]
@@ -152,10 +149,6 @@ y_test_high_confidence = y_test[indices][n:]
 predicted_high_confidence = np.argmax(predicted_vec, 1)
 print("High confidence results:")
 print_results(predicted_high_confidence,  y_test_high_confidence)
-
-
-quit()
-
 
 
 ####################################
@@ -167,7 +160,7 @@ def show_overfit_plot():
 	plt.legend(['train','test'], loc='upper left')
 	plt.show()
 
-show_overfit_plot()
+#show_overfit_plot()
 
 def show_variance_plot():
 	explained = preprocessing.named_steps['pca'].explained_variance_

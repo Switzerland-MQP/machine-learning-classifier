@@ -24,7 +24,24 @@ from keras.regularizers import l1
 import keras.backend as K
 
 import matplotlib.pyplot as plt
-	
+
+def smooth(keep, arr):
+	smoothed = []
+	previous = arr[0]
+	for i in range(len(arr)):
+		previous = keep*previous + (1-keep)*arr[i]
+		smoothed.append(previous)
+	return smoothed
+
+def to_1_interval(arr):
+	minimum = min(arr)
+	maximum = max(arr)
+	new_arr = []
+	for value in arr:
+		new_arr.append((value-minimum)/(maximum-minimum))
+	return new_arr
+
+
 def show_overfit_plot():
 	plt.plot(history.history['loss'])
 	plt.plot(history.history['val_loss'])
@@ -39,6 +56,8 @@ documents = utils.load_dirs_custom([
     './TAGGED_DATA/NON_PERSONAL_DATA'
 ])
 
+documents = utils.n_gram_documents_range(documents, 8, 8)
+
 doc_train, doc_test, = utils.document_test_train_split(
     documents, 0.20
 )
@@ -48,6 +67,9 @@ print("Doc test: ", len(doc_test))
 x_train, y_train = utils.convert_docs_to_lines(doc_train)
 x_test, y_test = utils.convert_docs_to_lines(doc_test)
 
+y_train = np.where((y_train == 2) | (y_train == 1), 1, 0)
+y_test = np.where((y_test == 2) | (y_test == 1), 1, 0)
+
 print("Convert lines timing {}".format(time.time() - start))
 
 preprocessor = Pipeline([('vect', CountVectorizer()),
@@ -56,13 +78,7 @@ preprocessor = Pipeline([('vect', CountVectorizer()),
 preprocessor.fit(x_train)
 x_train, x_test = (preprocessor.transform(x_train), preprocessor.transform(x_test))
 print("Finished data preprocessing - {} elapsed".format(time.time()-start))
-
-def mse(y_true, y_pred):
-	x = K.square(y_pred-y_true)
-	return K.dot(K.variable(K.cast_to_floatx(np.array([0.4, 1, 1.5]))), x)
 	
-
-
 def create_model():
 	input_shape = x_train.shape[1]
 
@@ -71,33 +87,33 @@ def create_model():
 	nn.add(Dropout(0.25))
 	#nn.add(Dense(8, activation='relu'))
 	#nn.add(Dropout(0.5))
-	nn.add(Dense(3,  activation='softmax', name="out_layer"))
+	nn.add(Dense(1,  activation='sigmoid', name="out_layer"))
 	#nn.compile(loss= 'categorical_crossentropy',
-	nn.compile(loss='mean_squared_error', optimizer='adam')
+	nn.compile(loss='binary_crossentropy', optimizer='adam')
 	return nn
 
 print("Begin fitting network")
 nn = create_model()
 
-y_train = np_utils.to_categorical(y_train)
-y_test_onehot = np_utils.to_categorical(y_test)
+#y_train = np_utils.to_categorical(y_train)
+#y_test_onehot = np_utils.to_categorical(y_test)
 
 def fit(batch_size, epochs):
-	global x_train, y_train, x_test, y_test_onehot
+	global x_train, y_train, x_test, y_test
 	return nn.fit(x_train, y_train,
 								batch_size=batch_size,
 								epochs=epochs,
 								verbose=2,
-								validation_data=(x_test, y_test_onehot))
+								validation_data=(x_test, y_test))
 
-history = fit(1000, 35)
+history = fit(1000, 30)
 
 
 
 elapsed = time.time() - start
 print("Elapsed time:", elapsed)
 
-show_overfit_plot()
+#show_overfit_plot()
 
 
 
@@ -107,40 +123,74 @@ all_predicted_lines = []
 all_target_lines = []
 for doc in doc_test:
     predicted_lines = nn.predict(preprocessor.transform(doc.data))
-    predicted_lines = np.argmax(predicted_lines, axis=1)
+    #predicted_lines = np.argmax(predicted_lines, axis=1)
 
     all_predicted_lines += list(predicted_lines)
+    doc.targets = np.where((doc.targets == 2) | (doc.targets == 1), 1, 0)
     all_target_lines += list(doc.targets)
 
     predicted_doc = utils.classify_doc(predicted_lines)
     documents_predicted.append(predicted_doc)
     documents_target.append(doc.category)
 
+all_predicted_lines = np.array([x for x in map(lambda x: x[0], all_predicted_lines)])
+predicted = all_predicted_lines.copy()
+all_predicted_lines = np.where(all_predicted_lines >= 0.5, 1, 0)
 
 print("Line by Line ")
+print(f"Accuracy: {np.mean(all_predicted_lines == all_target_lines)}")
+print(f"F2 scores: {fbeta_score(all_predicted_lines, all_target_lines, average=None, beta=2)}")
+
 print("Confusion Matrix: \n{}".format(
     confusion_matrix(all_target_lines, all_predicted_lines)
 ))
 
-accuracy = fbeta_score(
-    all_target_lines,
-    all_predicted_lines,
-    average=None,
-    beta=2
-)
-print("Accuracy: {}".format(accuracy))
+
+confidences = (predicted - 0.5) ** 2
+indices = np.argsort(confidences)
+
+	
+
+smoothed = smooth(0.96, confidences[indices])
+for i in range(len(smoothed)-1):
+	delta = smoothed[i+1] - smoothed[i]
+	if delta < 0.001 and i > 5:
+		n = i
+		print(f"delta found! {delta} -- n: {n}")
+		break
 
 
-doc_accuracy = fbeta_score(
-    documents_target,
-    documents_predicted,
-    average=None,
-    beta=2
-)
+all_target_lines = np.array(all_target_lines)
 
-print("Document Accuracy: {}".format(doc_accuracy))
+accuracies = []
+nonpersonal = []
+for i in range(len(confidences[indices])):
+	p = predicted[indices][i:]
+	p = np.where(p >= 0.5, 1, 0)	
 
-print("Document Confusion Matrix: \n{}".format(
-    confusion_matrix(documents_target, documents_predicted)
-))
+	y = all_target_lines[indices][i:]
+	f2_score = fbeta_score(p, y, average=None, beta=2)
+	try:
+		nonpersonal.append(f2_score[0])
+		accuracies.append(f2_score[1])
+	except:
+		pass	
+
+n = 4500 
+
+predicted = np.where(predicted[indices][n:] >= 0.5, 1, 0)
+y = all_target_lines[indices][n:]
+f2 = fbeta_score(predicted, y, average=None, beta=2)
+print(f"F2-scores: {f2}")
+
+
+
+plt.plot(to_1_interval(smooth(0.92, accuracies)))
+plt.plot(to_1_interval(smooth(0.92, confidences[indices])))
+
+#plt.scatter([n], [to_1_interval(smooth(0.96, confidences[indices]))[n]])
+plt.show()
+
+
+
 

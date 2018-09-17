@@ -94,8 +94,8 @@ input_shape = x_train.shape[1]
 
 
 nn = Sequential()
-nn.add(Dense(256, activation='relu', input_shape=(input_shape,)))
-nn.add(Dropout(0.2))
+nn.add(Dense(16, activation='relu', input_shape=(input_shape,)))
+nn.add(Dropout(0.25))
 nn.add(Dense(3,  activation='softmax', name="out_layer"))
 nn.compile(loss= 'categorical_crossentropy',
            optimizer='adam',
@@ -114,7 +114,7 @@ def fit(batch_size, epochs):
 								verbose=0,
 								validation_data=(x_test, y_test_onehot))
 
-history = fit(196, 600)
+history = fit(196, 500)
 print("Val Loss:{}".format(history.history['val_loss'][-1]))
 
 
