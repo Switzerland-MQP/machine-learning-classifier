@@ -20,12 +20,12 @@ from sklearn.linear_model import SGDClassifier
 from sklearn import metrics
 
 documents = utils.load_dirs_custom([
-    './SENSITIVE_DATA/html-tagged',
-    './PERSONAL_DATA/html-tagged',
-    './NON_PERSONAL_DATA'
-])
+    './TEXTDATA/SENSITIVE_DATA/html-tagged',
+    './TEXTDATA/PERSONAL_DATA/html-tagged',
+    './TEXTDATA/NON_PERSONAL_DATA'
+], individual=True)
 
-documents = utils.n_gram_documents(documents, 2)
+#  documents = utils.n_gram_documents(documents, 1)
 
 doc_train, doc_test, = utils.document_test_train_split(
     documents, 0.20
@@ -64,9 +64,6 @@ for doc in doc_test:
 
 
 print("Line by Line ")
-total_accuracy = np.mean(predicted_lines == doc.category)
-print("Total Accuracy:")
-print(total_accuracy)
 
 print("Confusion Matrix: \n{}".format(
     confusion_matrix(all_target_lines, all_predicted_lines)
@@ -89,9 +86,9 @@ doc_accuracy = fbeta_score(
 )
 
 print("Document Accuracy: {}".format(doc_accuracy))
-total_doc_accuracy = np.mean(predicted_doc == doc.targets)
-print("Total Accuracy:")
-print(total_doc_accuracy)
 print("Document Confusion Matrix: \n{}".format(
     confusion_matrix(documents_target, documents_predicted)
 ))
+
+
+utils.label_documents_dir("./TO_LABEL", text_clf)
