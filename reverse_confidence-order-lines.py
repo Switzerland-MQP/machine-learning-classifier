@@ -1,3 +1,6 @@
+# This file takes in a directory name and organizes the unlabeled files by 
+# our confidence in our average line prediction for that file.
+
 import numpy as np
 import time
 start = time.time()
@@ -116,15 +119,32 @@ print("Elapsed time:", elapsed)
 #show_overfit_plot()
 
 
+# Do unlabeled documents
+unlabeled_documents = utils.load_dirs_custom([
+	'./UNLABELED_DATA/SENSITIVE_DATA'
+])
+print("Unlabeled docs:", len(unlabeled_documents))
+unlabeled_documents = utils.n_gram_documents_range(unlabeled_documents, 8, 8)
+ 
+
+
+
+
 
 documents_predicted = []
 documents_target = []
 all_predicted_lines = []
 all_target_lines = []
 document_confidences = []
-for doc in doc_test:
-    feature_vectors = preprocessor.transform(doc.data)
+for doc in unlabeled_documents:
+    print(doc.path)
+    try:
+        feature_vectors = preprocessor.transform(doc.data)
+    except:
+        print(f"Found file with low length, skipping: {doc.data}")
+        continue
     predicted_lines = nn.predict(feature_vectors)
+		
 
     predicted_lines_confs = np.array([x for x in map(lambda x: x[0], list(predicted_lines))])
     document_confidence = np.mean(predicted_lines_confs)
@@ -140,68 +160,22 @@ for doc in doc_test:
     documents_predicted.append(predicted_doc)
     documents_target.append(doc.category)
 
-sorted_confidences = np.sort(np.array(document_confidences))
-plt.plot(sorted_confidences)
+document_confidences = np.array(document_confidences)
+indices = np.argsort(document_confidences)
+
+lengths = []
+
+for i in range(len(indices)):
+	doc_path = unlabeled_documents[indices[i]].path
+	confidence = document_confidences[indices[i]]
+	filename = f"{i}-{confidence:.3f}-{doc_path[32:]}"
+	print(filename)
+	#f = open('./confidence_out/line_level_no_snooping/'+filename, "w+")
+	#write_data = "\n".join(unlabeled_documents[indices[i]].data)
+	#f.write(write_data)
+	#lengths.append(len(write_data))
+	#f.close()
+
+plt.plot(document_confidences[indices])
+plt.plot(lengths)
 plt.show()
-
-all_predicted_lines = np.array([x for x in map(lambda x: x[0], all_predicted_lines)])
-predicted = all_predicted_lines.copy()
-all_predicted_lines = np.where(all_predicted_lines >= 0.5, 1, 0)
-
-print("Line by Line ")
-print(f"Accuracy: {np.mean(all_predicted_lines == all_target_lines)}")
-print(f"F2 scores: {fbeta_score(all_predicted_lines, all_target_lines, average=None, beta=2)}")
-
-print("Confusion Matrix: \n{}".format(
-    confusion_matrix(all_target_lines, all_predicted_lines)
-))
-
-
-confidences = (0.5 - predicted) ** 2
-indices = np.argsort(confidences)
-
-	
-
-smoothed = smooth(0.96, confidences[indices])
-for i in range(len(smoothed)-1):
-	delta = smoothed[i+1] - smoothed[i]
-	if delta < 0.001 and i > 5:
-		n = i
-		print(f"delta found! {delta} -- n: {n}")
-		break
-
-
-all_target_lines = np.array(all_target_lines)
-
-accuracies = []
-nonpersonal = []
-for i in range(len(confidences[indices])):
-	p = predicted[indices][i:]
-	p = np.where(p >= 0.5, 1, 0)	
-
-	y = all_target_lines[indices][i:]
-	f2_score = fbeta_score(p, y, average=None, beta=2)
-	try:
-		nonpersonal.append(f2_score[0])
-		accuracies.append(f2_score[1])
-	except:
-		pass	
-
-n = 3500
-
-predicted = np.where(predicted[indices][n:] >= 0.5, 1, 0)
-y = all_target_lines[indices][n:]
-f2 = fbeta_score(predicted, y, average=None, beta=2)
-print(f"F2-scores for lines above {n}: {f2}")
-
-
-
-plt.plot(to_1_interval(smooth(0.92, accuracies)))
-plt.plot(to_1_interval(smooth(0.92, confidences[indices])))
-
-#plt.scatter([n], [to_1_interval(smooth(0.96, confidences[indices]))[n]])
-plt.show()
-
-
-
-
