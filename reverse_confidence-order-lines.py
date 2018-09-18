@@ -170,11 +170,13 @@ for i in range(len(indices)):
 	confidence = document_confidences[indices[i]]
 	filename = f"{i}-{confidence:.3f}-{doc_path[32:]}"
 	print(filename)
-	#f = open('./confidence_out/line_level_no_snooping/'+filename, "w+")
-	#write_data = "\n".join(unlabeled_documents[indices[i]].data)
-	#f.write(write_data)
-	#lengths.append(len(write_data))
-	#f.close()
+
+        f = open('./confidence_out/line_level_no_snooping/'+filename, "w+")
+        infile = open(doc_path)
+        write_data = infile.read()
+        f.write(write_data)
+        lengths.append(len(write_data))
+        f.close()
 
 plt.plot(document_confidences[indices])
 plt.plot(lengths)
