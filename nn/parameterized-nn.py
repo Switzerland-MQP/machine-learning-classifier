@@ -19,6 +19,27 @@ import matplotlib.pyplot as plt
 
 ### Begin Aux Functions ###
 
+def print_model_summary(model):
+	config = model.get_config()
+	print("====== Model Summary ======")
+	_ = ' '
+	for item in config:
+		name = item['class_name']
+		if name == 'Dense':
+			units = item['config']['units']
+			activation = item['config']['activation']
+			print(f"{name}\t\t{units}\t\t{activation}")
+		else:
+			rate = item['config']['rate']
+			print(f"{name}\t\tRate:{rate}")
+
+def print_results(predicted, y_test):
+	print("Classifier accuracy: {}".format(np.mean(predicted == y_test)))
+	
+	f2_scores = fbeta_score(y_test, predicted, average=None, beta=2)
+	print("F-2 scores: {} - average: {}".format(f2_scores, np.mean(f2_scores)))
+	print(confusion_matrix(y_test, predicted))
+
 def show_overfit_plot():
 	plt.plot(history.history['loss'])
 	plt.plot(history.history['val_loss'])
@@ -49,14 +70,6 @@ def smooth(keep, arr):
 		smoothed.append(previous)
 	return smoothed
 
-def print_results(predicted, y_test):
-	print("Classifier accuracy: {}".format(np.mean(predicted == y_test)))
-	
-	f2_scores = fbeta_score(y_test, predicted, average=None, beta=2)
-	print("F-2 scores: {}".format(f2_scores))
-	print(confusion_matrix(y_test, predicted))
-
-
 ### Begin main parameterized code ###
 
 def run_model(layers):
@@ -86,7 +99,7 @@ def run_model(layers):
 	nn.compile(loss= 'categorical_crossentropy',
            optimizer='adam',
            metrics=['mean_squared_logarithmic_error'])
-	print(nn.get_config())
+	print_model_summary(nn)
 		
 	y_train = np_utils.to_categorical(y_train)
 	y_test_onehot = np_utils.to_categorical(y_test)
@@ -111,14 +124,16 @@ def run_model(layers):
 
 def run_model_average(layers, n_runs):
 	f2_scores = [run_model(layers) for i in range(n_runs)]
+	return np.mean(f2_scores)
 
 layers = ((lambda input_shape: [
 	Dense(16, activation='relu', input_shape=(input_shape,)),
 	Dropout(0.25),
 ]))
 
-f2_score = run_model(layers)
-print(f"F-2 score: {f2_score}")
+f2_score = run_model_average(layers, 3)
+print("===============================================")
+print(f"F-2 score, average of 3 runs: {f2_score}")
 
 	
 
