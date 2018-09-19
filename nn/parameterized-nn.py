@@ -121,11 +121,11 @@ def run_model_average(layers):
 def run_argument_sets(layers, argument_sets):
 	results = []
 	for argument_set in argument_sets:
-		results += run_model(layers, *argument_set)
-	return np.mean(results)
+		results += [run_model(layers, *argument_set)]
+	return results
 	
-def create_and_save_folds():
-	kfold = KFold(n_splits=5)
+def create_and_save_folds(k, f):
+	kfold = KFold(n_splits=k)
 	documents = load_files('../TEXTDATA/', shuffle=True)
 	x = np.array(documents.data)
 	y = np.array(documents.target)
@@ -144,18 +144,18 @@ def create_and_save_folds():
 		y_train = np_utils.to_categorical(y_train)
 	
 		argument_sets += [(x_train, x_test, y_train, y_test)]
-	np.save('4-cv-preprocessed-data', argument_sets)
+	np.save(f, argument_sets)
 	
 
 def run_model_kfold(layers):
 	f = "5-cv-preprocessed-data.npy"
 	if not os.path.isfile(f):
 		print("No saved data found, creating it----")
-		create_and_save_folds()
+		create_and_save_folds(5, f)
 	
 	argument_sets = np.load(f)
 	print("Data preprocessing took {} seconds.".format(time.time()-begin))
-	return run_argument_sets(layers, argument_sets)
+	return np.mean(run_argument_sets(layers, argument_sets))
 	
 
 
@@ -166,6 +166,7 @@ layers = (lambda input_shape: [
 						#Dropout(0.3),
 						])	
 
-print(run_model_kfold(layers))
+results = run_model_kfold(layers)
+print(results)
 
 
