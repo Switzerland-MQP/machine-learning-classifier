@@ -179,5 +179,5 @@ for i in range(len(indices)):
 	f.close()
 
 plt.plot(document_confidences[indices])
-plt.plot(lengths)
+#plt.plot(lengths)
 plt.show()

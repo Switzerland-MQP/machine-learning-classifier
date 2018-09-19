@@ -15,7 +15,7 @@ from keras.utils import np_utils
 import numpy as np
 import matplotlib.pyplot as plt
 
-
+begin = time.time()
 
 ### Begin Aux Functions ###
 
@@ -117,23 +117,77 @@ def run_model(layers):
 	predicted_vec = nn.predict(x_test)
 	predicted = np.argmax(predicted_vec, axis=1)
 
-	print("Elapsed time:", time.time()-start)
+	print(f"Elapsed time: {time.time()-begin}")
 	print_results(predicted, y_test)
 	return np.mean(fbeta_score(y_test, predicted, average=None, beta=2))
 
 
-def run_model_average(layers, n_runs):
+def run_model_average(layers):
+	n_runs = 3
 	f2_scores = [run_model(layers) for i in range(n_runs)]
-	return np.mean(f2_scores)
+	average = np.mean(f2_scores)
+	print("Total elapsed: {}".format(time.time()-begin))
+	print(f"####f2-score, average of {n_runs} runs: {average}####")
+	return average
 
-layers = ((lambda input_shape: [
-	Dense(16, activation='relu', input_shape=(input_shape,)),
-	Dropout(0.25),
-]))
+"""
+n_units = [4, 8, 16, 32, 48, 64, 76, 96, 108]
+permutations = [
+	run_model_average(
+		(lambda input_shape: [Dense(128, activation='relu', input_shape=(input_shape,)),
+													Dropout(0.3),
+													Dense(n, activation='relu'),
+													Dropout(0.3)])
+	)	
+	for n in n_units
+]
+print(permutations)
 
-f2_score = run_model_average(layers, 3)
-print("===============================================")
-print(f"F-2 score, average of 3 runs: {f2_score}")
+plt.plot(permutations)
+plt.show()
+"""
+
+layers = (lambda input_shape: [
+						Dense(16, activation='relu', input_shape=(input_shape,)),
+						Dropout(0.3),
+						#Dense(16, activation='relu'),
+						#Dropout(0.3),
+						])	
+
+runs = [run_model(layers) for i in range(30)]
+run_averages = [np.mean(runs[:i]) for i in range(len(runs))]
+print(f"Mean f2 score: {np.mean(runs)}")
+plt.plot(runs)
+plt.plot(run_averages)
+plt.show()
+
+
+"""
+dropouts = [0, 0.25, 0.5]
+lines = []
+for drop in dropouts:
+	line = [
+		run_model_average(
+			(lambda input_shape: [Dense(128, activation='relu', input_shape=(input_shape,)),
+														Dropout(0.3),
+														Dense(n, activation='relu'),
+														Dropout(0.3)])
+		)		
+		for n in n_units
+	]
+	lines.append([line])
+
+print(lines)
+
+i = 0
+colors = ['blue', 'green', 'yellow', 'orange', 'red']
+for line in lines:
+	plt.plot(line, c=colors[i])
+	i += 1
+plt.show()
+"""
+
+
 
 	
 
