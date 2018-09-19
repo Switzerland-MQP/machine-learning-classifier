@@ -12,6 +12,7 @@ from keras.layers import Dense, Dropout
 from keras.regularizers import l1
 from keras import backend as K
 from keras.utils import np_utils
+from keras.callbacks import EarlyStopping
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -41,7 +42,7 @@ def print_results(predicted, y_test):
 	print("F-2 scores: {} - average: {}".format(f2_scores, np.mean(f2_scores)))
 	print(confusion_matrix(y_test, predicted))
 
-def show_overfit_plot():
+def show_overfit_plot(history):
 	plt.plot(history.history['loss'])
 	plt.plot(history.history['val_loss'])
 	plt.legend(['train','test'], loc='upper left')
@@ -98,7 +99,11 @@ def run_model(layers, x_train, x_test, y_train, y_test):
 								batch_size=batch_size,
 								epochs=epochs,
 								verbose=0,
-								validation_data=(x_test, y_test_onehot))
+								validation_data=(x_test, y_test_onehot),
+								callbacks= [EarlyStopping(monitor='val_loss', 
+																			min_delta=0, 
+																			patience=30, 
+																			verbose=0, mode='auto')])
 
 
 	history = fit(128, 500)
@@ -168,5 +173,51 @@ layers = (lambda input_shape: [
 
 results = run_model_kfold(layers)
 print(results)
+
+
+
+"""
+n_units = [4, 8, 16, 32, 48, 64, 76, 96, 108]
+permutations = [
+	run_model_average(
+		(lambda input_shape: [Dense(128, activation='relu', input_shape=(input_shape,)),
+													Dropout(0.3),
+													Dense(n, activation='relu'),
+													Dropout(0.3)])
+	)	
+	for n in n_units
+]
+print(permutations)
+plt.plot(permutations)
+plt.show()
+"""
+
+
+"""
+dropouts = [0, 0.25, 0.5]
+lines = []
+for drop in dropouts:
+	line = [
+		run_model_average(
+			(lambda input_shape: [Dense(128, activation='relu', input_shape=(input_shape,)),
+														Dropout(0.3),
+														Dense(n, activation='relu'),
+														Dropout(0.3)])
+		)		
+		for n in n_units
+	]
+	lines.append([line])
+print(lines)
+i = 0
+colors = ['blue', 'green', 'yellow', 'orange', 'red']
+for line in lines:
+	plt.plot(line, c=colors[i])
+	i += 1
+plt.show()
+"""
+
+
+
+
 
 
