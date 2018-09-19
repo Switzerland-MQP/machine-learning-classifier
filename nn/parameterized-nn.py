@@ -1,7 +1,8 @@
 import time
+import os
 from sklearn.datasets import load_files
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold
 from sklearn.decomposition import TruncatedSVD
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import fbeta_score, confusion_matrix 
@@ -72,24 +73,13 @@ def smooth(keep, arr):
 
 ### Begin main parameterized code ###
 
-def run_model(layers):
+def run_model(layers, x_train, x_test, y_train, y_test):
 	print("==============================================")
 	start = time.time()
 
-	documents = load_files('../TEXTDATA/', shuffle=False)
-	x_train, x_test, y_train, y_test = train_test_split(
-	    documents.data, documents.target, test_size=0.3
-	)
+
 
 	x_test_copy = x_test.copy()
-
-	preprocessing = Pipeline([('count', CountVectorizer()),
-												  ('tfidf', TfidfTransformer()),
-													('pca', TruncatedSVD(n_components=430))])
-	preprocessing.fit(x_train)
-	x_train, x_test = (preprocessing.transform(x_train), preprocessing.transform(x_test))
-	print("Data preprocessing took {} seconds.".format(time.time()-start))
-
 
 	input_shape = x_train.shape[1]
 	nn = Sequential()
@@ -100,10 +90,8 @@ def run_model(layers):
            optimizer='adam',
            metrics=['mean_squared_logarithmic_error'])
 	print_model_summary(nn)
-		
-	y_train = np_utils.to_categorical(y_train)
-	y_test_onehot = np_utils.to_categorical(y_test)
 
+	y_test_onehot = np_utils.to_categorical(y_test)	
 
 	def fit(batch_size, epochs):
 		return nn.fit(x_train, y_train,
@@ -130,22 +118,46 @@ def run_model_average(layers):
 	print(f"####f2-score, average of {n_runs} runs: {average}####")
 	return average
 
-"""
-n_units = [4, 8, 16, 32, 48, 64, 76, 96, 108]
-permutations = [
-	run_model_average(
-		(lambda input_shape: [Dense(128, activation='relu', input_shape=(input_shape,)),
-													Dropout(0.3),
-													Dense(n, activation='relu'),
-													Dropout(0.3)])
-	)	
-	for n in n_units
-]
-print(permutations)
+def run_argument_sets(layers, argument_sets):
+	results = []
+	for argument_set in argument_sets:
+		results += run_model(layers, *argument_set)
+	return np.mean(results)
+	
+def create_and_save_folds():
+	kfold = KFold(n_splits=5)
+	documents = load_files('../TEXTDATA/', shuffle=True)
+	x = np.array(documents.data)
+	y = np.array(documents.target)
 
-plt.plot(permutations)
-plt.show()
-"""
+	argument_sets = []
+	print(len(documents.data))
+	for train_indices, test_indices in kfold.split(x):
+		print(f"TRAIN: {train_indices} | TEST: {test_indices}")
+		x_train, x_test = x[train_indices], x[test_indices]
+		y_train, y_test = y[train_indices], y[test_indices]
+		preprocessing = Pipeline([('count', CountVectorizer()),
+												  ('tfidf', TfidfTransformer()),
+													('pca', TruncatedSVD(n_components=430))])
+		preprocessing.fit(x_train)
+		x_train, x_test = (preprocessing.transform(x_train), preprocessing.transform(x_test))	
+		y_train = np_utils.to_categorical(y_train)
+	
+		argument_sets += [(x_train, x_test, y_train, y_test)]
+	np.save('4-cv-preprocessed-data', argument_sets)
+	
+
+def run_model_kfold(layers):
+	f = "5-cv-preprocessed-data.npy"
+	if not os.path.isfile(f):
+		print("No saved data found, creating it----")
+		create_and_save_folds()
+	
+	argument_sets = np.load(f)
+	print("Data preprocessing took {} seconds.".format(time.time()-begin))
+	return run_argument_sets(layers, argument_sets)
+	
+
 
 layers = (lambda input_shape: [
 						Dense(16, activation='relu', input_shape=(input_shape,)),
@@ -154,54 +166,6 @@ layers = (lambda input_shape: [
 						#Dropout(0.3),
 						])	
 
-runs = [run_model(layers) for i in range(30)]
-run_averages = [np.mean(runs[:i]) for i in range(len(runs))]
-print(f"Mean f2 score: {np.mean(runs)}")
-plt.plot(runs)
-plt.plot(run_averages)
-plt.show()
-
-
-"""
-dropouts = [0, 0.25, 0.5]
-lines = []
-for drop in dropouts:
-	line = [
-		run_model_average(
-			(lambda input_shape: [Dense(128, activation='relu', input_shape=(input_shape,)),
-														Dropout(0.3),
-														Dense(n, activation='relu'),
-														Dropout(0.3)])
-		)		
-		for n in n_units
-	]
-	lines.append([line])
-
-print(lines)
-
-i = 0
-colors = ['blue', 'green', 'yellow', 'orange', 'red']
-for line in lines:
-	plt.plot(line, c=colors[i])
-	i += 1
-plt.show()
-"""
-
-
-
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
+print(run_model_kfold(layers))
 
 
