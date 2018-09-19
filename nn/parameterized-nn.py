@@ -117,13 +117,13 @@ def run_model(layers, x_train, x_test, y_train, y_test):
 	return np.mean(fbeta_score(y_test, predicted, average=None, beta=2))
 
 
-def run_model_average(layers):
-	n_runs = 3
-	f2_scores = [run_model(layers) for i in range(n_runs)]
-	average = np.mean(f2_scores)
-	print("Total elapsed: {}".format(time.time()-begin))
-	print(f"####f2-score, average of {n_runs} runs: {average}####")
-	return average
+#def run_model_average(layers):
+#	n_runs = 3
+#	f2_scores = [run_model(layers) for i in range(n_runs)]
+#	average = np.mean(f2_scores)
+#	print("Total elapsed: {}".format(time.time()-begin))
+#	print(f"####f2-score, average of {n_runs} runs: {average}####")
+#	return average
 
 def run_argument_sets(layers, argument_sets):
 	results = []
@@ -166,70 +166,12 @@ def run_model_kfold(layers):
 	
 
 
-n_units = [12, 64, 128, 512]
-dropout = [0, 0.25, 0.5]
+result =	run_model_kfold(
+	(lambda input_shape: [Dense(128, activation='relu', input_shape=(input_shape,)),
+												Dropout(0.25),
+												Dense(32, activation='relu', input_shape=(input_shape,)),
+												Dropout(0.25),
+												])
+)	
 
-
-n_units = [4, 8, 16, 32, 48, 64, 80, 96, 112]
-# Try all numbers of units in first layer
-permutations = [
-	run_model_kfold(
-		(lambda input_shape: [Dense(128, activation='relu', input_shape=(input_shape,)),
-													Dropout(0.25),
-													Dense(n, activation='relu', input_shape=(input_shape,)),
-													Dropout(0.25),
-													])
-	)	
-	for n in n_units
-]
-
-print(permutations)
-plt.plot(permutations)
-plt.ylabel("F2-score")
-plt.xlabel("Number of neurons")
-plt.xticks(range(len(n_units)), n_units)
-plt.show()
-
-"""
-second_layer_units = [4, 8, 16, 32, 48, 64, 76, 96, 108]
-# Try all variations of second layer neurons
-permutations = [
-	run_model_kfold(
-		(lambda input_shape: [Dense(128, activation='relu', input_shape=(input_shape,)),
-													Dropout(0.3),
-													Dense(n, activation='relu'),
-													Dropout(0.3)])
-	)	
-	for n in n_units
-]
-print(permutations)
-plt.plot(permutations)
-plt.show()
-
-
-dropouts = [0, 0.25, 0.5]
-lines = []
-for drop in dropouts:
-	line = [
-		run_model_average(
-			(lambda input_shape: [Dense(128, activation='relu', input_shape=(input_shape,)),
-														Dropout(0.3),
-														Dense(n, activation='relu'),
-														Dropout(0.3)])
-		)		
-		for n in n_units
-	]
-	lines.append([line])
-print(lines)
-i = 0
-colors = ['blue', 'green', 'yellow', 'orange', 'red']
-for line in lines:
-	plt.plot(line, c=colors[i])
-	i += 1
-plt.show()
-
-"""
-
-
-
-
+print(result)
