@@ -166,19 +166,24 @@ def run_model_kfold(layers):
 	
 
 
-n_units = [4, 8, 12, 16, 20, 32, 64, 128, 256, 512]
+n_units = [12, 64, 128, 512]
+dropout = [0, 0.25, 0.5]
 
 # Try all numbers of units in first layer
 permutations = [
 	run_model_kfold(
 		(lambda input_shape: [Dense(n, activation='relu', input_shape=(input_shape,)),
-													#Dropout(0.2)])
+													Dropout(d),
 													])
 	)	
-	for n in n_units
+	for n in n_units for d in dropout
 ]
+
+plt.plot(permutations[:4], c='black')
+plt.plot(permutations[4:8], c='yellow')
+plt.plot(permutation[8:12], c='red')
 print(permutations)
-plt.plot(permutations)
+#plt.plot(permutations)
 plt.ylabel("F2-score")
 plt.xlabel("Number of neurons")
 plt.xticks(range(len(n_units)), n_units)
