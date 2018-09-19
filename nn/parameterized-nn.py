@@ -94,22 +94,24 @@ def run_model(layers, x_train, x_test, y_train, y_test):
 
 	y_test_onehot = np_utils.to_categorical(y_test)	
 
+	early_stopping_monitor = EarlyStopping(monitor='val_loss', 
+																			min_delta=0, 
+																			patience=30, 
+																			verbose=0, mode='auto')
 	def fit(batch_size, epochs):
 		return nn.fit(x_train, y_train,
 								batch_size=batch_size,
 								epochs=epochs,
 								verbose=0,
 								validation_data=(x_test, y_test_onehot),
-								callbacks= [EarlyStopping(monitor='val_loss', 
-																			min_delta=0, 
-																			patience=30, 
-																			verbose=0, mode='auto')])
+								callbacks= [early_stopping_monitor])
 
 
 	history = fit(128, 500)
 	predicted_vec = nn.predict(x_test)
 	predicted = np.argmax(predicted_vec, axis=1)
 
+	print(f"Stopped training at epoch {early_stopping_monitor.stopped_epoch}")
 	print(f"Elapsed time: {time.time()-begin}")
 	print_results(predicted, y_test)
 	return np.mean(fbeta_score(y_test, predicted, average=None, beta=2))
@@ -164,22 +166,29 @@ def run_model_kfold(layers):
 	
 
 
-layers = (lambda input_shape: [
-						Dense(16, activation='relu', input_shape=(input_shape,)),
-						Dropout(0.3),
-						#Dense(16, activation='relu'),
-						#Dropout(0.3),
-						])	
+n_units = [4, 8, 12, 16, 20, 32, 64, 128, 256, 512]
 
-results = run_model_kfold(layers)
-print(results)
-
-
+# Try all numbers of units in first layer
+permutations = [
+	run_model_kfold(
+		(lambda input_shape: [Dense(n, activation='relu', input_shape=(input_shape,)),
+													#Dropout(0.2)])
+													])
+	)	
+	for n in n_units
+]
+print(permutations)
+plt.plot(permutations)
+plt.ylabel("F2-score")
+plt.xlabel("Number of neurons")
+plt.xticks(range(len(n_units)), n_units)
+plt.show()
 
 """
-n_units = [4, 8, 16, 32, 48, 64, 76, 96, 108]
+second_layer_units = [4, 8, 16, 32, 48, 64, 76, 96, 108]
+# Try all variations of second layer neurons
 permutations = [
-	run_model_average(
+	run_model_kfold(
 		(lambda input_shape: [Dense(128, activation='relu', input_shape=(input_shape,)),
 													Dropout(0.3),
 													Dense(n, activation='relu'),
@@ -190,10 +199,8 @@ permutations = [
 print(permutations)
 plt.plot(permutations)
 plt.show()
-"""
 
 
-"""
 dropouts = [0, 0.25, 0.5]
 lines = []
 for drop in dropouts:
@@ -214,9 +221,8 @@ for line in lines:
 	plt.plot(line, c=colors[i])
 	i += 1
 plt.show()
+
 """
-
-
 
 
 
