@@ -1,6 +1,4 @@
 import numpy as np
-
-
 #  from scipy.stats import randint as sp_randint
 from sklearn.decomposition import TruncatedSVD
 from scipy.stats import randint as sp_randint
@@ -18,7 +16,10 @@ from sklearn.metrics import fbeta_score
 from sklearn.pipeline import Pipeline
 import utils
 
+from sklearn.model_selection import KFold
 
+
+kf = KFold(n_splits=5)
 print("---Loading Data---")
 documents = utils.load_dirs_custom([
     './TEXTDATA/SENSITIVE_DATA/html-tagged',
@@ -27,15 +28,21 @@ documents = utils.load_dirs_custom([
 ])
 
 print("---Creating N_grams---")
-documents = utils.n_gram_documents_range(documents, 2, 3)
+documents = utils.n_gram_documents_range(documents, 2, 2)
 
 
 doc_train, doc_test, = utils.document_test_train_split(
     documents, 0.20
 )
 
-X_train, y_train = utils.convert_docs_to_lines(doc_train)
-X_test, y_test = utils.convert_docs_to_lines(doc_test)
+argument_sets = []
+for train_index, test_index in kf.split(documents):
+    print("TRAIN:", train_index, "TEST:", test_index)
+    doc_train, doc_test = documents[train_index], documents[test_index]
+
+    X_train, y_train = utils.convert_docs_to_lines(doc_train)
+    X_test, y_test = utils.convert_docs_to_lines(doc_test)
+    argument_sets += [(X_train, X_test, y_train, y_test)]
 
 
 text_clf = Pipeline([('vect', CountVectorizer()),
@@ -59,7 +66,7 @@ param_distributions = {
 }
 
 
-n_iter_search = 2
+n_iter_search = 10
 random_search = RandomizedSearchCV(
     text_clf,
     param_distributions=param_distributions,
@@ -67,53 +74,60 @@ random_search = RandomizedSearchCV(
     n_jobs=-1
 )
 
-print("---Fitting model---")
-random_search.fit(X_train, y_train)
+
+def run_argument_sets(random_search, argument_sets):
+    scores = []
+    for s in argument_sets:
+        (X_train, X_test, y_train, y_test) = s
+        print("---Fitting model---")
+        random_search.fit(X_train, y_train)
+
+        print("PCA with random forest")
+        documents_predicted = []
+        documents_target = []
+        all_predicted_lines = []
+        all_target_lines = []
+        for doc in doc_test:
+            predicted_lines = random_search.predict(doc.data)
+            all_predicted_lines += list(predicted_lines)
+            all_target_lines += list(doc.targets)
+
+            predicted_doc = utils.classify_doc(predicted_lines)
+            documents_predicted.append(predicted_doc)
+            documents_target.append(doc.category)
+        scores += [random_search.score(X_test, y_test)]
+
+        #  print("Line by Line ")
+        #  print("Confusion Matrix: \n{}".format(
+            #  confusion_matrix(all_target_lines, all_predicted_lines)
+        #  ))
+
+        #  accuracy = fbeta_score(
+            #  all_target_lines,
+            #  all_predicted_lines,
+            #  average=None,
+            #  beta=2
+        #  )
+        #  print("Accuracy: {}".format(accuracy))
+
+        #  doc_accuracy = fbeta_score(
+            #  documents_target,
+            #  documents_predicted,
+            #  average=None,
+            #  beta=2
+        #  )
+
+        #  print("Document Accuracy: {}".format(doc_accuracy))
+
+        #  print("Document Confusion Matrix: \n{}".format(
+            #  confusion_matrix(documents_target, documents_predicted)
+        #  ))
+
+    print(f"Scores: {scores}")
+    print(f"Score mean: {np.mean(scores)}")
 
 
-print("PCA with random forest")
-
-documents_predicted = []
-documents_target = []
-all_predicted_lines = []
-all_target_lines = []
-for doc in doc_test:
-    predicted_lines = random_search.predict(doc.data)
-    all_predicted_lines += list(predicted_lines)
-    all_target_lines += list(doc.targets)
-
-    predicted_doc = utils.classify_doc(predicted_lines)
-    documents_predicted.append(predicted_doc)
-    documents_target.append(doc.category)
+#  utils.label_new_document("./testFile.txt", random_search)
 
 
-print("Line by Line ")
-print("Confusion Matrix: \n{}".format(
-    confusion_matrix(all_target_lines, all_predicted_lines)
-))
-
-accuracy = fbeta_score(
-    all_target_lines,
-    all_predicted_lines,
-    average=None,
-    beta=2
-)
-print("Accuracy: {}".format(accuracy))
-
-
-doc_accuracy = fbeta_score(
-    documents_target,
-    documents_predicted,
-    average=None,
-    beta=2
-)
-
-print("Document Accuracy: {}".format(doc_accuracy))
-
-print("Document Confusion Matrix: \n{}".format(
-    confusion_matrix(documents_target, documents_predicted)
-))
-
-utils.label_new_document("./testFile.txt", random_search)
-
-
+run_argument_sets(random_search, argument_sets)
