@@ -118,10 +118,10 @@ def convert_categories_individual(categories):
 
 
 def convert_categories_buckets(categories):
-    for c in sensitive_categories_dict:
+    for c in sensitive_categories_dict.inv:
         if c in categories:
             return 2
-    for c in personal_categories_dict:
+    for c in personal_categories_dict.inv:
         if c in categories:
             return 1
     return 0
