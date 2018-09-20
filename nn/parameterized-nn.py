@@ -90,13 +90,13 @@ def run_model(layers, x_train, x_test, y_train, y_test):
 	nn.compile(loss= 'categorical_crossentropy',
            optimizer='adam',
            metrics=['mean_squared_logarithmic_error'])
-	print_model_summary(nn)
+	#print_model_summary(nn)
 
 	y_test_onehot = np_utils.to_categorical(y_test)	
 
 	early_stopping_monitor = EarlyStopping(monitor='val_loss', 
 																			min_delta=0, 
-																			patience=30, 
+																			patience=10, 
 																			verbose=0, mode='auto')
 	def fit(batch_size, epochs):
 		return nn.fit(x_train, y_train,
@@ -111,10 +111,11 @@ def run_model(layers, x_train, x_test, y_train, y_test):
 	predicted_vec = nn.predict(x_test)
 	predicted = np.argmax(predicted_vec, axis=1)
 
-	print(f"Stopped training at epoch {early_stopping_monitor.stopped_epoch}")
+	stopped_epoch = early_stopping_monitor.stopped_epoch
+	print(f"Stopped training at epoch {stopped_epoch}")
 	print(f"Elapsed time: {time.time()-begin}")
 	print_results(predicted, y_test)
-	return np.mean(fbeta_score(y_test, predicted, average=None, beta=2))
+	return (np.mean(fbeta_score(y_test, predicted, average=None, beta=2)), nn, stopped_epoch)
 
 
 #def run_model_average(layers):
@@ -127,8 +128,14 @@ def run_model(layers, x_train, x_test, y_train, y_test):
 
 def run_argument_sets(layers, argument_sets):
 	results = []
+	epochs = []
 	for argument_set in argument_sets:
-		results += [run_model(layers, *argument_set)]
+		result, nn, epoch = run_model(layers, *argument_set)
+		results += [result]
+		epochs += [epoch]
+
+	print_model_summary(nn)
+	print(f"Model average F2: {np.mean(results)}\n Average epochs:{np.mean(epochs)}")
 	return results
 	
 def create_and_save_folds(k, f):
@@ -165,13 +172,23 @@ def run_model_kfold(layers):
 	return np.mean(run_argument_sets(layers, argument_sets))
 	
 
+params = [4, 5, 6, 7, 8, 9, 10, 11, 12]
 
-result =	run_model_kfold(
+result =	[run_model_kfold(
 	(lambda input_shape: [Dense(128, activation='relu', input_shape=(input_shape,)),
 												Dropout(0.25),
-												Dense(32, activation='relu', input_shape=(input_shape,)),
+												Dense(32, activation='relu'),
+												Dropout(0.25),
+												Dense(12, activation='relu'),
+												Dropout(0.25),
+												Dense(d, activation='relu'),
 												Dropout(0.25),
 												])
-)	
+) for d in params]	
 
 print(result)
+plt.plot(result)
+plt.xlabel("Number of neurons in third dense layer")
+plt.ylabel("F2-score")
+plt.xticks(range(len(params)), params)
+plt.show()
