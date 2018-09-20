@@ -17,7 +17,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.linear_model import SGDClassifier
 from sklearn import metrics
 
-kfold = KFold(n_splits=5)
+kfold = KFold(n_splits=5, shuffle=True)
 
 documents = utils.load_dirs_custom([
     './SENSITIVE_DATA/html-tagged',
@@ -25,7 +25,7 @@ documents = utils.load_dirs_custom([
     './NON_PERSONAL_DATA'
 ])
 
-documents = utils.n_gram_documents_range(documents, 2, 2)
+documents = utils.n_gram_documents_range(documents, 5, 6)
 documents = np.array(documents)
 doc_train, doc_test, = utils.document_test_train_split(
     documents, 0.20
