@@ -40,8 +40,8 @@ x_train, x_test, y_train, y_test = train_test_split(
 	padded_docs, documents.target, test_size=0.3
 )
 
-y_train = to_categorical(y_train)
-y_test = to_categorical(y_test)
+y_train = np.where((y_train == 2) | (y_train == 1), 1, 0)
+y_test = np.where((y_test == 2) | (y_test == 1), 1, 0)
 
 
 embedding_vector_length = 64
@@ -53,8 +53,8 @@ def create_model(top_words, embedding_vector_length, max_length):
 	model.add(Conv1D(filters=32, kernel_size=8, padding='same', activation='relu'))
 	model.add(MaxPooling1D(pool_size=2))
 	model.add(LSTM(256, dropout=0.2, recurrent_dropout=0.2))
-	model.add(Dense(3, activation='softmax'))
-	model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+	model.add(Dense(1, activation='sigmoid'))
+	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 	# Will need to be categorical_crossentropy
 	return model
@@ -70,8 +70,6 @@ print("Accuracy: %.2f%%" % (scores[1]*100))
 
 
 y_predicted = model.predict(x_test)
-y_predicted = np.argmax(y_predicted, 1)
-y_test = np.argmax(y_test, 1)
 
 score = fbeta_score(y_predicted, y_test, average=None, beta=2)
 print(f"F2-scores: {score}")
