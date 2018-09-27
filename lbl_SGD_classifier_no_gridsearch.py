@@ -46,7 +46,7 @@ for train_index, test_index in kfold.split(documents):
 
 text_clf = Pipeline([('vect', CountVectorizer(ngram_range=(1, 2))),
                     ('tfidf', TfidfTransformer())]),
-                    (SGDClassifier(loss='hinge', penalty='none', learning_rate='optimal', alpha=1e-4, epsilon=0.1, max_iter=1000, tol=None, shuffle=True))])
+                    ('clf', SGDClassifier(loss='hinge', penalty='none', learning_rate='optimal', alpha=1e-4, epsilon=0.1, max_iter=1000, tol=None, shuffle=True))])
 
 def run_argument_sets(text_clf, argument_sets):
     scores = []
