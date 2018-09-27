@@ -19,7 +19,7 @@ import utils
 from sklearn.model_selection import KFold
 
 
-kf = KFold(n_splits=5)
+kf = KFold(n_splits=5, shuffle=True)
 print("---Loading Data---")
 documents = utils.load_dirs_custom([
     './TEXTDATA/SENSITIVE_DATA/html-tagged',
@@ -31,14 +31,17 @@ print("---Creating N_grams---")
 documents = utils.n_gram_documents_range(documents, 2, 2)
 
 
-doc_train, doc_test, = utils.document_test_train_split(
-    documents, 0.20
-)
+#  doc_train, doc_test, = utils.document_test_train_split(
+    #  documents, 0.20
+#  )
+
+documents = np.array(documents)
 
 argument_sets = []
 for train_index, test_index in kf.split(documents):
     print("TRAIN:", train_index, "TEST:", test_index)
-    doc_train, doc_test = documents[train_index], documents[test_index]
+    doc_train = documents[train_index]
+    doc_test = documents[test_index]
 
     X_train, y_train = utils.convert_docs_to_lines(doc_train)
     X_test, y_test = utils.convert_docs_to_lines(doc_test)
@@ -77,6 +80,7 @@ random_search = RandomizedSearchCV(
 
 def run_argument_sets(random_search, argument_sets):
     scores = []
+    models = []
     for s in argument_sets:
         (X_train, X_test, y_train, y_test) = s
         print("---Fitting model---")
@@ -95,39 +99,41 @@ def run_argument_sets(random_search, argument_sets):
             predicted_doc = utils.classify_doc(predicted_lines)
             documents_predicted.append(predicted_doc)
             documents_target.append(doc.category)
-        scores += [random_search.score(X_test, y_test)]
 
-        #  print("Line by Line ")
-        #  print("Confusion Matrix: \n{}".format(
-            #  confusion_matrix(all_target_lines, all_predicted_lines)
-        #  ))
+        print("Line by Line ")
+        print("Confusion Matrix: \n{}".format(
+            confusion_matrix(all_target_lines, all_predicted_lines)
+        ))
 
-        #  accuracy = fbeta_score(
-            #  all_target_lines,
-            #  all_predicted_lines,
-            #  average=None,
-            #  beta=2
-        #  )
-        #  print("Accuracy: {}".format(accuracy))
+        accuracy = fbeta_score(
+            all_target_lines,
+            all_predicted_lines,
+            average=None,
+            beta=2
+        )
+        scores += [accuracy]
+        models += [random_search.best_estimator_]
+        print("Accuracy: {}".format(accuracy))
 
-        #  doc_accuracy = fbeta_score(
-            #  documents_target,
-            #  documents_predicted,
-            #  average=None,
-            #  beta=2
-        #  )
+        doc_accuracy = fbeta_score(
+            documents_target,
+            documents_predicted,
+            average=None,
+            beta=2
+        )
 
-        #  print("Document Accuracy: {}".format(doc_accuracy))
+        print("Document Accuracy: {}".format(doc_accuracy))
 
-        #  print("Document Confusion Matrix: \n{}".format(
-            #  confusion_matrix(documents_target, documents_predicted)
-        #  ))
+        print("Document Confusion Matrix: \n{}".format(
+            confusion_matrix(documents_target, documents_predicted)
+        ))
 
-    print(f"Scores: {scores}")
-    print(f"Score mean: {np.mean(scores)}")
+    print("Scores: ", scores)
+    print("Score mean: ", np.mean(scores))
+    return scores, models
 
 
 #  utils.label_new_document("./testFile.txt", random_search)
 
 
-run_argument_sets(random_search, argument_sets)
+scores, models = run_argument_sets(random_search, argument_sets)
