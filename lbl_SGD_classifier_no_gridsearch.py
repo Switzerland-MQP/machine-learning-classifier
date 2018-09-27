@@ -39,6 +39,7 @@ for train_index, test_index in kfold.split(documents):
     X_test, y_test = utils.convert_docs_to_lines(doc_test)
     preprocessing = Pipeline([('vect', CountVectorizer(ngram_range=(1, 2))),
                     ('tfidf', TfidfTransformer())])
+    preprocessing.fit(X_train)
     X_train, X_test = (preprocessing.transform(X_train), preprocessing.fit(X_test))
     argument_sets += [(X_train, X_test, y_train, y_test)] 
 
