@@ -1,109 +1,139 @@
 import numpy as np
-
-
-from scipy.stats import randint as sp_randint
+#  from scipy.stats import randint as sp_randint
 from sklearn.decomposition import TruncatedSVD
+from scipy.stats import randint as sp_randint
 
 # Models to try
 from sklearn.ensemble import RandomForestClassifier
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.model_selection import train_test_split
 #  from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import fbeta_score
 
+from sklearn.pipeline import Pipeline
 import utils
 
+from sklearn.model_selection import KFold
 
-data, target, documents = utils.load_dirs_custom([
+
+kf = KFold(n_splits=5, shuffle=True)
+print("---Loading Data---")
+documents = utils.load_dirs_custom([
     './TEXTDATA/SENSITIVE_DATA/html-tagged',
     './TEXTDATA/PERSONAL_DATA/html-tagged',
     './TEXTDATA/NON_PERSONAL_DATA'
 ])
 
-X_train, X_test, y_train, y_test = train_test_split(
-    data, target, test_size=0.20
-)
+print("---Creating N_grams---")
+documents = utils.n_gram_documents_range(documents, 2, 2)
 
 
-count_vect = CountVectorizer()
-X_train_count = count_vect.fit_transform(X_train)
+#  doc_train, doc_test, = utils.document_test_train_split(
+    #  documents, 0.20
+#  )
 
-tfidf_transformer = TfidfTransformer()
-X_train_tfidf = tfidf_transformer.fit_transform(X_train_count)
+documents = np.array(documents)
 
-pca = TruncatedSVD(n_components=20)
-pca.fit(X_train_tfidf)
+argument_sets = []
+for train_index, test_index in kf.split(documents):
+    print("TRAIN:", train_index, "TEST:", test_index)
+    doc_train = documents[train_index]
+    doc_test = documents[test_index]
 
-X_train_pca = pca.transform(X_train_tfidf)
-
-
-# Test data transformations
-X_test_count = count_vect.transform(X_test)
-X_test_tfidf = tfidf_transformer.transform(X_test_count)
-X_test_pca = pca.transform(X_test_tfidf)
+    X_train, y_train = utils.convert_docs_to_lines(doc_train)
+    X_test, y_test = utils.convert_docs_to_lines(doc_test)
+    argument_sets += [(X_train, X_test, y_train, y_test)]
 
 
-clf = RandomForestClassifier()
+text_clf = Pipeline([('vect', CountVectorizer()),
+                     ('tfidf', TfidfTransformer()),
+                     ('pca', TruncatedSVD(n_components=20)),
+                     ('clf', RandomForestClassifier(n_jobs=-1))
+                     ])
 
-parameters_rand = {
-    "n_estimators": sp_randint(300, 2000),
-    "max_depth": [3, None],
-    "max_features": sp_randint(1, 11),
-    "min_samples_split": sp_randint(2, 11),
-    "min_samples_leaf": sp_randint(1, 11),
-    "class_weight": ["balanced", {0: 1, 1: 2, 2: 3}, {0: 1, 1: 3, 2: 5}],
-    "bootstrap": [True, False],
-    "criterion": ["gini", "entropy"]
+param_distributions = {
+    "vect__ngram_range": [(1, 3)],
+    "pca__n_components": sp_randint(20, 400),
+    "clf__n_estimators": sp_randint(100, 2000),
+    "clf__max_features": sp_randint(1, 8),
+    "clf__min_samples_leaf": sp_randint(1, 6),
+    #  "clf__class_weight": [
+        #  {0: 1, 1: 1.5, 2: 1.75},
+        #  {0: 1, 1: 2, 2: 3},
+        #  {0: 1, 1: 3, 2: 5},
+    #  ],
+    "clf__criterion": ["entropy", "gini"]
 }
 
-# run randomized search
-# Accuracy should be comparable to grid search, but runs much much faster
-print("Training Model")
-n_iter_search = 20
-random_search = RandomizedSearchCV(clf, param_distributions=parameters_rand,
-                                   n_iter=n_iter_search,
-                                   n_jobs=-1)
 
-random_search.fit(X_train_pca, y_train)
-predicted = random_search.predict(X_test_pca)
-
-print("PCA with random forest")
-
-accuracy = fbeta_score(y_test, predicted, average=None, beta=2)
-print("Accuracy: {}".format(accuracy))
-
-
-confusion_matrix(y_test, predicted)
-
-print("Confusion Matrix: \n{}".format(confusion_matrix(y_test, predicted)))
-
-
-documents_predicted = []
-documents_target = []
-for doc in documents:
-    document_count = count_vect.transform(doc.data)
-    document_tfidf = tfidf_transformer.transform(document_count)
-    document_pca = pca.transform(document_tfidf)
-
-    predicted_lines = random_search.predict(document_pca)
-    predicted_doc = utils.classify_doc(predicted_lines)
-    documents_predicted.append(predicted_doc)
-    documents_target.append(doc.category)
-
-
-doc_accuracy = fbeta_score(
-    documents_target,
-    documents_predicted,
-    average=None,
-    beta=2
+n_iter_search = 10
+random_search = RandomizedSearchCV(
+    text_clf,
+    param_distributions=param_distributions,
+    n_iter=n_iter_search,
+    n_jobs=-1
 )
 
-print("Document Accuracy: {}".format(doc_accuracy))
 
-print("Document Confusion Matrix: \n{}".format(
-    confusion_matrix(documents_target, documents_predicted)
-))
+def run_argument_sets(random_search, argument_sets):
+    scores = []
+    models = []
+    for s in argument_sets:
+        (X_train, X_test, y_train, y_test) = s
+        print("---Fitting model---")
+        random_search.fit(X_train, y_train)
+
+        print("PCA with random forest")
+        documents_predicted = []
+        documents_target = []
+        all_predicted_lines = []
+        all_target_lines = []
+        for doc in doc_test:
+            predicted_lines = random_search.predict(doc.data)
+            all_predicted_lines += list(predicted_lines)
+            all_target_lines += list(doc.targets)
+
+            predicted_doc = utils.classify_doc(predicted_lines)
+            documents_predicted.append(predicted_doc)
+            documents_target.append(doc.category)
+
+        print("Line by Line ")
+        print("Confusion Matrix: \n{}".format(
+            confusion_matrix(all_target_lines, all_predicted_lines)
+        ))
+
+        accuracy = fbeta_score(
+            all_target_lines,
+            all_predicted_lines,
+            average=None,
+            beta=2
+        )
+        scores += [accuracy]
+        models += [random_search.best_estimator_]
+        print("Accuracy: {}".format(accuracy))
+
+        doc_accuracy = fbeta_score(
+            documents_target,
+            documents_predicted,
+            average=None,
+            beta=2
+        )
+
+        print("Document Accuracy: {}".format(doc_accuracy))
+
+        print("Document Confusion Matrix: \n{}".format(
+            confusion_matrix(documents_target, documents_predicted)
+        ))
+
+    print("Scores: ", scores)
+    print("Score mean: ", np.mean(scores))
+    return scores, models
+
+
+#  utils.label_new_document("./testFile.txt", random_search)
+
+
+scores, models = run_argument_sets(random_search, argument_sets)
