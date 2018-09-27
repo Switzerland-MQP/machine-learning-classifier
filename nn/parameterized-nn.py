@@ -1,4 +1,5 @@
 import time
+import random
 import os
 from sklearn.datasets import load_files
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
@@ -74,29 +75,19 @@ def smooth(keep, arr):
 
 ### Begin main parameterized code ###
 
-def run_model(layers, x_train, x_test, y_train, y_test):
-	print("==============================================")
+def run_model(nn, x_train, x_test, y_train, y_test):
 	start = time.time()
-
 
 
 	x_test_copy = x_test.copy()
 
 	input_shape = x_train.shape[1]
-	nn = Sequential()
-	for layer in layers(input_shape):
-		nn.add(layer)
-	nn.add(Dense(3,  activation='softmax', name="out_layer"))
-	nn.compile(loss= 'categorical_crossentropy',
-           optimizer='adam',
-           metrics=['mean_squared_logarithmic_error'])
-	print_model_summary(nn)
 
 	y_test_onehot = np_utils.to_categorical(y_test)	
 
 	early_stopping_monitor = EarlyStopping(monitor='val_loss', 
 																			min_delta=0, 
-																			patience=30, 
+																			patience=10, 
 																			verbose=0, mode='auto')
 	def fit(batch_size, epochs):
 		return nn.fit(x_train, y_train,
@@ -111,10 +102,13 @@ def run_model(layers, x_train, x_test, y_train, y_test):
 	predicted_vec = nn.predict(x_test)
 	predicted = np.argmax(predicted_vec, axis=1)
 
-	print(f"Stopped training at epoch {early_stopping_monitor.stopped_epoch}")
-	print(f"Elapsed time: {time.time()-begin}")
-	print_results(predicted, y_test)
-	return np.mean(fbeta_score(y_test, predicted, average=None, beta=2))
+	stopped_epoch = early_stopping_monitor.stopped_epoch
+	#print(f"Stopped training at epoch {stopped_epoch}")
+	#print(f"Elapsed time: {time.time()-begin}")
+	#print_results(predicted, y_test)
+	score = np.mean(fbeta_score(y_test, predicted, average=None, beta=2))
+	print(f"Elapsed time: {time.time()-begin} | Epochs: {stopped_epoch} | F2-score: {score}")
+	return (score, stopped_epoch)
 
 
 #def run_model_average(layers):
@@ -125,10 +119,16 @@ def run_model(layers, x_train, x_test, y_train, y_test):
 #	print(f"####f2-score, average of {n_runs} runs: {average}####")
 #	return average
 
-def run_argument_sets(layers, argument_sets):
+def run_argument_sets(nn, argument_sets):
+	print("==========Running 5 fold cross validation==========")
 	results = []
+	epochs = []
 	for argument_set in argument_sets:
-		results += [run_model(layers, *argument_set)]
+		result, epoch = run_model(nn, *argument_set)
+		results += [result]
+		epochs += [epoch]
+
+	print(f"Model average F2: {np.mean(results)}\n Average epochs:{np.mean(epochs)}")
 	return results
 	
 def create_and_save_folds(k, f):
@@ -154,7 +154,7 @@ def create_and_save_folds(k, f):
 	np.save(f, argument_sets)
 	
 
-def run_model_kfold(layers):
+def run_model_kfold(nn):
 	f = "5-cv-preprocessed-data.npy"
 	if not os.path.isfile(f):
 		print("No saved data found, creating it----")
@@ -162,16 +162,54 @@ def run_model_kfold(layers):
 	
 	argument_sets = np.load(f)
 	print("Data preprocessing took {} seconds.".format(time.time()-begin))
-	return np.mean(run_argument_sets(layers, argument_sets))
-	
+	results = run_argument_sets(nn, argument_sets)
+	return np.mean(results)
+
+from functools import reduce	
+def create_random_nn():
+	nn = Sequential()
+	nn.add(Dense(random.randint(32, 600), activation="relu", input_shape=(430,)))
+	nn.add(Dropout(random.uniform(0, 0.7)))
+	for i in range(random.choice([0, 1, 2, 3])):
+		nn.add(Dense(random.randint(32, 600), activation="relu"))
+		nn.add(Dropout(random.uniform(0, 0.7)))
+	nn.add(Dense(3,  activation='softmax', name="out_layer"))
+	nn.compile(loss= 'categorical_crossentropy',
+           optimizer='adam',
+           metrics=['mean_squared_logarithmic_error'])
+	return nn
+
+nns = []
+for i in range(180):
+	nn = create_random_nn()
+	print_model_summary(nn)
+	result = run_model_kfold(nn)
+	nns += [(result, nn)]
+	print("||||||||||||||||||||| done with ", i)
+
+nns = sorted(nns, key=(lambda x: x[0]), reverse=True)
+print(f"Best model score: {nns[0][0]}")
+print_model_summary(nns[0][1])
 
 
-result =	run_model_kfold(
+
+"""
+result =	[run_model_kfold(
 	(lambda input_shape: [Dense(128, activation='relu', input_shape=(input_shape,)),
 												Dropout(0.25),
-												Dense(32, activation='relu', input_shape=(input_shape,)),
+												Dense(32, activation='relu'),
+												Dropout(0.25),
+												Dense(12, activation='relu'),
+												Dropout(0.25),
+												Dense(d, activation='relu'),
 												Dropout(0.25),
 												])
-)	
+) for d in params]	
 
 print(result)
+plt.plot(result)
+plt.xlabel("Number of neurons in third dense layer")
+plt.ylabel("F2-score")
+plt.xticks(range(len(params)), params)
+plt.show()
+"""
