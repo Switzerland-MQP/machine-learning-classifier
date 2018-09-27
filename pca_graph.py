@@ -12,9 +12,9 @@ sns.set()
 
 
 documents = utils.load_dirs_custom([
-    './SENSITIVE_DATA/html-tagged',
-    './PERSONAL_DATA/html-tagged',
-    './NON_PERSONAL_DATA'
+    './TEXTDATA/SENSITIVE_DATA/html-tagged',
+    './TEXTDATA/PERSONAL_DATA/html-tagged',
+    './TEXTDATA/NON_PERSONAL_DATA'
 ])
 
 doc_train, doc_test, = utils.document_test_train_split(

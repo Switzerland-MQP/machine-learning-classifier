@@ -11,6 +11,9 @@ numpy.random.seed(7)
 top_words = 5000
 (x_train, y_train), (x_test, y_test) = imdb.load_data(num_words=top_words)
 
+import ipdb
+ipdb.set_trace()
+
 #Truncate and pad sequences
 max_length = 500
 x_train = sequence.pad_sequences(x_train, maxlen=max_length)

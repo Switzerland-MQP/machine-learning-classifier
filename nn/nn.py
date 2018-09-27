@@ -15,6 +15,7 @@ from sklearn.metrics import fbeta_score, confusion_matrix
 from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout
 from keras.regularizers import l1
+from keras.callbacks import EarlyStopping
 
 from keras import backend as K
 
@@ -34,23 +35,18 @@ preprocessing = Pipeline([('count', CountVectorizer()),
 													('pca', TruncatedSVD(n_components=430))])
 preprocessing.fit(x_train)
 x_train, x_test = (preprocessing.transform(x_train), preprocessing.transform(x_test))
-"""
-x_train = np.load('./npy/2/x_train.npy')
-x_test =  np.load('./npy/2/x_test.npy')
-y_train = np.load('./npy/2/y_train.npy')
-y_test =  np.load('./npy/2/y_test.npy')
-"""
 print("Finished data preprocessing - {} elapsed".format(time.time()-start))
+
+early_stopping_callback = EarlyStopping(monitor='val_loss',
+				min_delta=0, patience=12, verbose=0, mode='auto')
 
 
 input_shape = x_train.shape[1]
-
-
 nn = Sequential()
-nn.add(Dense(16, activation='relu', input_shape=(input_shape,)))
+nn.add(Dense(128, activation='relu', input_shape=(input_shape,)))
 nn.add(Dropout(0.25))
-#nn.add(Dense(8, activation='relu'))
-#nn.add(Dropout(0.5))
+nn.add(Dense(32, activation='relu'))
+nn.add(Dropout(0.25))
 nn.add(Dense(3,  activation='softmax', name="out_layer"))
 nn.compile(loss= 'categorical_crossentropy',
            optimizer='adam',
@@ -67,7 +63,9 @@ def fit(batch_size, epochs):
 								batch_size=batch_size,
 								epochs=epochs,
 								verbose=0,
-								validation_data=(x_test, y_test_onehot))
+								validation_data=(x_test, y_test_onehot),
+								callbacks=[early_stopping_callback])
+stopped = early_stopping_callback.stopped_epoch
 
 history = fit(196, 500)
 
@@ -78,6 +76,7 @@ predicted = np.argmax(predicted_vec, axis=1)
 
 elapsed = time.time() - start
 print("Elapsed time:", elapsed)
+print(f"Stopped at epoch {stopped}")
 
 def print_results(predicted, y_test):
 	boolean_predicted = predicted.copy()
@@ -102,6 +101,7 @@ print_results(predicted, y_test)
 ## Organise documents by standard deviation
 #Divide each number in predicted_vec by the sum 
 sums = np.sum(predicted_vec, 1)
+sums = np.linalg.norm(predicted_vec, 1)
 divided = (predicted_vec.T/sums).T
 stds = np.std(divided, 1)
 indices = np.argsort(stds)
@@ -128,21 +128,26 @@ import matplotlib.pyplot as plt
 smoothed = smooth(0.96, stds[indices])
 for i in range(len(smoothed)-1):
 	delta = smoothed[i+1] - smoothed[i]
-	if delta < 0.001 and i > 5:
+	if delta < 0.0005 and i > 20:
 		n = i
 		print(f"delta found! {delta} -- n: {n}")
 		break
 
-accuracies = []
-for i in range(len(stds[indices])):
-	p = np.argmax(predicted_vec[indices][i:], 1)
-	y = y_test[indices][i:]
-	accuracies.append(np.mean(p == y))
-plt.plot(to_1_interval(smooth(0.96, accuracies)), c='blue')
-plt.plot(to_1_interval(smooth(0.90, stds[indices])), c='orange')
-#plt.scatter([n], [to_1_interval(smooth(0.90, accuracies))[n]])
-plt.show()
+def show_confidence_graph():
+	accuracies = []
+	for i in range(len(stds[indices])):
+		p = np.argmax(predicted_vec[indices][i:], 1)
+		y = y_test[indices][i:]
+		accuracies.append(np.mean(p == y))
+	#plt.plot(to_1_interval(smooth(0.96, accuracies)), c='blue')
+	plt.plot(to_1_interval(accuracies), c='blue')
+	plt.plot(to_1_interval(smooth(0.85, stds[indices])), c='orange')
+	#plt.scatter([n], [to_1_interval(smooth(0.90, accuracies))[n]])
+	plt.show()
 
+#show_confidence_graph()
+
+n = 55
 predicted_vec = predicted_vec[indices][n:]
 y_test_high_confidence = y_test[indices][n:]
 
@@ -160,7 +165,7 @@ def show_overfit_plot():
 	plt.legend(['train','test'], loc='upper left')
 	plt.show()
 
-#show_overfit_plot()
+show_overfit_plot()
 
 def show_variance_plot():
 	explained = preprocessing.named_steps['pca'].explained_variance_

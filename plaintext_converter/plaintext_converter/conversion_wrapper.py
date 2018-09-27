@@ -2,7 +2,7 @@ import os
 import uuid
 import sys
 
-from to_plaintext import to_plaintext
+from plaintext_converter import to_plaintext
 
 
 def getDestFilename(dest, file):
@@ -27,9 +27,14 @@ def valid(file):
     return file_extension in whitelist
 
 
-if __name__ == "__main__":
-    source = sys.argv[1]
-    dest = sys.argv[2]
+def convert_directory(source, dest):
+    if not os.path.isdir(source):
+        print("Please give a directory as the first argument")
+        return
+
+    if not os.path.isdir(dest):
+        os.makedirs(dest)
+
     for root, dirs, files in os.walk(source):
         path = root.split(os.sep)
 
@@ -45,10 +50,19 @@ if __name__ == "__main__":
                 text = to_plaintext(full_file_name)
             except:
                 logfile = open("errors.log", "a")
-                logfile.write("Couldn't convert file: {}\n\r".format(full_file_name))
+                logfile.write("Couldn't convert file: {}\n\r".format(
+                    full_file_name
+                ))
                 logfile.close()
+                continue
 
             destFileName = getDestFilename(dest, file)
             destFile = open(destFileName, "wb")
             destFile.write(text)
             destFile.close()
+
+
+if __name__ == "__main__":
+    source = sys.argv[1]
+    dest = sys.argv[2]
+    convert_directory(source, dest)

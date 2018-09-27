@@ -118,8 +118,17 @@ ocr_test/
 
 /TAGGED_DATA/
 /TAGGED_DATA_COPY/
+/TAGGED_DATA_NEW/
+/TAGGED_DATA_NEW_NEW/
+/UNLABELED_DATA/
+/confidence_out/
+nn/5-cv-preprocessed-data.npy
+
 
 /nn/utils.py
 UTOLABELED/
 AUTOLABELED/
 TO_LABEL/
+
+testfolder
+outputfolder

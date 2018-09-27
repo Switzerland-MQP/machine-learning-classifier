@@ -25,7 +25,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 text_clf = Pipeline([('vect', CountVectorizer(ngram_range=(1, 3))),
                     ('tfidf', TfidfTransformer()),
-										('pca', TruncatedSVD(n_components=200)),
+										('pca', TruncatedSVD(n_components=430)),
                     ('clf', SGDClassifier(loss='hinge', penalty='none', learning_rate='optimal', alpha=1e-4, epsilon=0.1, max_iter=1000, tol=None, shuffle=True)),
 ])
 
