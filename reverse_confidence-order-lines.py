@@ -121,7 +121,7 @@ print("Elapsed time:", elapsed)
 
 # Do unlabeled documents
 unlabeled_documents = utils.load_dirs_custom([
-	'./UNLABELED_DATA/SENSITIVE_DATA'
+	'./UNLABELED_DATA/PERSONAL'
 ])
 print("Unlabeled docs:", len(unlabeled_documents))
 unlabeled_documents = utils.n_gram_documents_range(unlabeled_documents, 8, 8)
@@ -171,7 +171,7 @@ for i in range(len(indices)):
 	filename = f"{i}-{confidence:.3f}-{doc_path[32:]}"
 	print(filename)
 
-	f = open('./confidence_out/line_level_no_snooping/'+filename, "w+")
+	f = open('./confidence_out/personal_line_level/'+filename, "w+")
 	infile = open(doc_path)
 	write_data = infile.read()
 	f.write(write_data)

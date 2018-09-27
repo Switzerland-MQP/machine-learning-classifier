@@ -106,9 +106,10 @@ def run_model(nn, x_train, x_test, y_train, y_test):
 	#print(f"Stopped training at epoch {stopped_epoch}")
 	#print(f"Elapsed time: {time.time()-begin}")
 	#print_results(predicted, y_test)
-	score = np.mean(fbeta_score(y_test, predicted, average=None, beta=2))
-	print(f"Elapsed time: {time.time()-begin} | Epochs: {stopped_epoch} | F2-score: {score}")
-	return (score, stopped_epoch)
+	scores = fbeta_score(y_test, predicted, average=None, beta=2)
+	mean = np.mean(scores)
+	print(f"Elapsed time: {time.time()-begin} | Epochs: {stopped_epoch} | F2-score: {mean}")
+	return (mean, stopped_epoch, scores)
 
 
 #def run_model_average(layers):
@@ -123,10 +124,14 @@ def run_argument_sets(nn, argument_sets):
 	print("==========Running 5 fold cross validation==========")
 	results = []
 	epochs = []
+	scores_ = []
 	for argument_set in argument_sets:
-		result, epoch = run_model(nn, *argument_set)
+		result, epoch, scores = run_model(nn, *argument_set)
 		results += [result]
 		epochs += [epoch]
+		scores_ += [scores]
+	avgs = np.mean(scores_, 0)
+	print(f"Avgs: {avgs} ")
 
 	print(f"Model average F2: {np.mean(results)}\n Average epochs:{np.mean(epochs)}")
 	return results
@@ -179,7 +184,7 @@ def create_random_nn():
            metrics=['mean_squared_logarithmic_error'])
 	return nn
 
-nns = []
+"""nns = []
 for i in range(180):
 	nn = create_random_nn()
 	print_model_summary(nn)
@@ -190,26 +195,23 @@ for i in range(180):
 nns = sorted(nns, key=(lambda x: x[0]), reverse=True)
 print(f"Best model score: {nns[0][0]}")
 print_model_summary(nns[0][1])
-
-
-
 """
+def create_nn():
+	nn = Sequential()
+	nn.add(Dense(128, activation="relu", input_shape=(430,)))
+	nn.add(Dropout(0.25))
+	nn.add(Dense(32, activation="relu"))
+	nn.add(Dropout(0.25))
+	nn.add(Dense(3,  activation='softmax', name="out_layer"))
+	nn.compile(loss= 'categorical_crossentropy',
+           optimizer='adam',
+           metrics=['mean_squared_logarithmic_error'])
+	return nn
+
+
+
 result =	[run_model_kfold(
-	(lambda input_shape: [Dense(128, activation='relu', input_shape=(input_shape,)),
-												Dropout(0.25),
-												Dense(32, activation='relu'),
-												Dropout(0.25),
-												Dense(12, activation='relu'),
-												Dropout(0.25),
-												Dense(d, activation='relu'),
-												Dropout(0.25),
-												])
-) for d in params]	
+	create_nn()
+)]	
 
 print(result)
-plt.plot(result)
-plt.xlabel("Number of neurons in third dense layer")
-plt.ylabel("F2-score")
-plt.xticks(range(len(params)), params)
-plt.show()
-"""
