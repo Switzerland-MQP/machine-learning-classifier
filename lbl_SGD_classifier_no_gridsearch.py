@@ -40,8 +40,10 @@ for train_index, test_index in kfold.split(documents):
     preprocessing = Pipeline([('vect', CountVectorizer(ngram_range=(1, 2))),
                     ('tfidf', TfidfTransformer())])
     preprocessing.fit(X_train)
-    X_train, X_test = (preprocessing.transform(X_train), preprocessing.fit(X_test))
+    X_train, X_test = (preprocessing.transform(X_train), preprocessing.train(X_test))
     argument_sets += [(X_train, X_test, y_train, y_test)] 
+
+
 
 
 text_clf = SGDClassifier(loss='hinge', penalty='none', learning_rate='optimal', alpha=1e-4, epsilon=0.1, max_iter=1000, tol=None, shuffle=True)
