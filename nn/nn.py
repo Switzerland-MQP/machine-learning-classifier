@@ -120,7 +120,7 @@ def show_cut_off():
 #show_cut_off()
 
 predicted = np.argmax(predicted_vec, axis=1)
-
+"""
 predicted = []
 for probs in predicted_vec:
 	if probs[2] > 0.01:
@@ -130,7 +130,7 @@ for probs in predicted_vec:
 		predicted += [1]
 		continue
 	predicted += [0]
-
+"""
 
 
 elapsed = time.time() - start
