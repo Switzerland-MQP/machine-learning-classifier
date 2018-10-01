@@ -100,6 +100,18 @@ def run_model(nn, x_train, x_test, y_train, y_test):
 
 	history = fit(128, 500)
 	predicted_vec = nn.predict(x_test)
+	
+	"""
+	predicted = []
+	for probabilities in predicted_vec:
+		if probabilities[2] > 0.25:
+			predicted += [2]
+			continue
+		if probabilities[1] > 0.25:
+			predicted += [1]
+			continue
+		predicted += [0]
+	"""
 	predicted = np.argmax(predicted_vec, axis=1)
 
 	stopped_epoch = early_stopping_monitor.stopped_epoch
@@ -109,6 +121,7 @@ def run_model(nn, x_train, x_test, y_train, y_test):
 	scores = fbeta_score(y_test, predicted, average=None, beta=2)
 	mean = np.mean(scores)
 	print(f"Elapsed time: {time.time()-begin} | Epochs: {stopped_epoch} | F2-score: {mean}")
+	print(confusion_matrix(y_test, predicted))
 	return (mean, stopped_epoch, scores)
 
 
@@ -202,7 +215,7 @@ def create_nn():
 	nn.add(Dropout(0.25))
 	nn.add(Dense(32, activation="relu"))
 	nn.add(Dropout(0.25))
-	nn.add(Dense(3,  activation='softmax', name="out_layer"))
+	nn.add(Dense(3,  activation='sigmoid', name="out_layer"))
 	nn.compile(loss= 'categorical_crossentropy',
            optimizer='adam',
            metrics=['mean_squared_logarithmic_error'])
