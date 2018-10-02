@@ -4,7 +4,7 @@ from os import listdir
 from os.path import isfile, join
 #  from parser.to_lines import Line
 
-parent_dir = './TEXTDATA'
+parent_dir = './TAGGED_DATA_NEW_NEW'
 personal_dir = parent_dir + '/PERSONAL_DATA/html-tagged'
 sensitive_dir = parent_dir + '/SENSITIVE_DATA/html-tagged'
 non_personal_dir = parent_dir + '/NON_PERSONAL_DATA'

@@ -19,20 +19,21 @@ personal_categories_dict = bidict({
     10: 'mental',
     11: 'economic',
     12: 'cultural',
-    13: 'social'
+    13: 'social',
+    14: 'physiological',
 })
 
 sensitive_categories_dict = bidict({
-    14: 'criminal',
-    15: 'origin',
-    16: 'health',
-    17: 'religion',
-    18: 'political',
-    19: 'philosophical',
-    20: 'unions',
-    21: 'sex-life',
-    22: 'sex-orientation',
-    23: 'biometric'
+    15: 'criminal',
+    16: 'origin',
+    17: 'health',
+    18: 'religion',
+    19: 'political',
+    20: 'philosophical',
+    21: 'unions',
+    22: 'sex-life',
+    23: 'sex-orientation',
+    24: 'biometric',
 })
 
 all_categories_dict = bidict({-1: 'other_personal'})
