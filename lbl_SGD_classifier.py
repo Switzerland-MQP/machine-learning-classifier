@@ -18,6 +18,7 @@ import utils
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import SGDClassifier
 from sklearn import metrics
+from sklearn.externals import joblib
 
 documents = utils.load_dirs_custom([
     './SENSITIVE_DATA/html-tagged',
@@ -25,8 +26,10 @@ documents = utils.load_dirs_custom([
     './NON_PERSONAL_DATA'
 ])
 
+documents = utils.n_gram_documents_range(documents, 5, 6)
+documents = np.array(documents)
 doc_train, doc_test, = utils.document_test_train_split(
-    documents, 0.20
+    documents, 0.01
 )
 
 print("Doc train: ", len(doc_train))
@@ -36,25 +39,15 @@ X_test, y_test = utils.convert_docs_to_lines(doc_test)
 
 
 
+text_clf = Pipeline([('vect', CountVectorizer(ngram_range=(1, 2))),
+                    ('tfidf', TfidfTransformer()),
+                    ('clf', SGDClassifier(loss='hinge', penalty='none', learning_rate='optimal', alpha=1e-4, epsilon=0.1, max_iter=1000, tol=None, shuffle=True))])
 
-clf = SGDClassifier(shuffle=True, tol=None, max_iter=1000)
-
-params = {
- "loss": ["hinge", "log", "modified_huber", "squared_hinge", "perceptron", "squared_loss", "huber"],
- "penalty": ['l1', 'l2', 'none'],
- "class_weight": [{0:1, 1:1.5, 2:1.75}, {0:1, 1:2, 0:3}, {0:1, 1:3, 0:5},"balanced", None]
-}
-
-gridsearch_clf = Pipeline([
-	('vect', CountVectorizer(ngram_range=(1, 2))),
-  ('tfidf', TfidfTransformer()),
-	('gridsearch', GridSearchCV(clf, param_grid=params, n_jobs=-1))						
-])
 
 print("Training Model")
 gridsearch_clf.fit(X_train, y_train)
 print("SGD")
-
+joblib.dump(text_clf, 'svm_trained.joblib') 
 documents_predicted = []
 documents_target = []
 all_predicted_lines = []
