@@ -16,8 +16,8 @@ import utils
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import SGDClassifier
 from sklearn import metrics
-
-kfold = KFold(n_splits=5, shuffle=True)
+from sklearn.external import joblib
+kfold = KFold(n_splits=1, shuffle=True)
 
 documents = utils.load_dirs_custom([
     './SENSITIVE_DATA/html-tagged',
@@ -28,7 +28,7 @@ documents = utils.load_dirs_custom([
 documents = utils.n_gram_documents_range(documents, 5, 6)
 documents = np.array(documents)
 doc_train, doc_test, = utils.document_test_train_split(
-    documents, 0.20
+    documents, 0.01
 )
 
 argument_sets = []
@@ -54,7 +54,7 @@ def run_argument_sets(text_clf, argument_sets):
         (X_train, X_test, y_train, y_test) = s
         print("---Fitting model---")
         text_clf.fit(X_train, y_train)
-
+        joblib.dump(text_clf, 'svm_trained.joblib') 
         print("SVM with SGD")
         documents_predicted = []
         documents_target = []
