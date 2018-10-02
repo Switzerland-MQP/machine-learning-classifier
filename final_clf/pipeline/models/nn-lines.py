@@ -60,7 +60,7 @@ documents = utils.load_dirs_custom([
 documents = utils.n_gram_documents_range(documents, 8, 8)
 
 doc_train, doc_test, = utils.document_test_train_split(
-    documents, 0.20
+    documents, 0.05
 )
 
 print("Doc train: ", len(doc_train))
@@ -210,10 +210,10 @@ plt.show()
 ### Save model configuration and weights ###
 def save():
 	model_json = nn.to_json()
-	with open("category-clf/model.json", "w") as json_file:
+	with open("line-clf/model.json", "w") as json_file:
 		json_file.write(model_json)
 	json_file.close()
-	nn.save_weights("category-clf/model.h5")
+	nn.save_weights("line-clf/model.h5")
 
-
+save()
 
