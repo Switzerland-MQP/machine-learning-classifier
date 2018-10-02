@@ -45,7 +45,7 @@ text_clf = Pipeline([('vect', CountVectorizer(ngram_range=(1, 2))),
 
 
 print("Training Model")
-gridsearch_clf.fit(X_train, y_train)
+text_clf.fit(X_train, y_train)
 print("SGD")
 joblib.dump(text_clf, 'svm_trained.joblib') 
 documents_predicted = []
@@ -53,7 +53,7 @@ documents_target = []
 all_predicted_lines = []
 all_target_lines = []
 for doc in doc_test:
-    predicted_lines = gridsearch_clf.predict(doc.data)
+    predicted_lines = text_clf.predict(doc.data)
     all_predicted_lines += list(predicted_lines)
     all_target_lines += list(doc.targets)
 
