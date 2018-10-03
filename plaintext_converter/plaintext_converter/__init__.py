@@ -5,5 +5,4 @@ name = "plaintext_converter"
 
 
 def convert_directory(source, dest):
-    conversion_wrapper.convert_directory(source, dest)
-
+    conversion_wrapper.convert_directory(source, dest),

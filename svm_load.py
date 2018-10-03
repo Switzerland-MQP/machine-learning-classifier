@@ -23,19 +23,6 @@ def load_predict(directory):
     for doc in doc_test:
         lines = clf.predict(doc.data)
         predicted_lines += list(lines)
-        target_lines += list(doc.targets)
-    print("Line by Line ")
-    print("Confusion Matrix: \n{}".format(
-    confusion_matrix(target_lines, predicted_lines)
-    ))
-
-    accuracy = fbeta_score(
-        target_lines,
-        predicted_lines,
-        average=None,
-        beta=2
-    )
-    print("F2 scores: {}".format(accuracy))
     return predicted_lines
     
      
