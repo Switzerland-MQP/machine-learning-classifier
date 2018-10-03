@@ -134,3 +134,4 @@ testfolder
 outputfolder
 
 /final_clf/documents/
+/final_clf/pipeline/models/preprocessing.pickle
