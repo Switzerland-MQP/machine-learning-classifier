@@ -69,7 +69,7 @@ Line by line level labeling is done to help predict which PII category types are
 - A line is not <professional> if it contains the skills of a person. For example, if they have a section in a CV that only lists out skills, this does not count and will throw off the model. However, if they list a job they had and what they did at that job, then this whole area can be considered <professional>
 - When using multiple labels in multiple lines (i.e. \<name_phone\>) make sure that each line contained within the HTML tag contains each type of PII that is within the tag
 - At times the optimal character recognition will make a copied text file of a document look obscure. If the information is still readable, then tag it as such. However, if it is very obscure, then do not tag it. For example: Name: *Herrrn Smith* is okay to label. Name: *Haaahhrn Sm0th* is not okay to label
-- Run `cat.sh` after you finish labeling to check that there is no mistakes, this will generate a file parse-errors.txt which will say which documents have errors and why (it will also print this out to the terminal)
+- Run `count-tagged-lines.py` after you finish labeling to check that there is no mistakes, this will generate a file parse-errors.txt which will say which documents have errors and why (it will also print this out to the terminal)
 
 ### Examples
 **Base Case:**
