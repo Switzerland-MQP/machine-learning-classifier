@@ -23,9 +23,9 @@ import numpy as np
 
 from keras.utils import np_utils
 
-documents = load_files('../TEXTDATA/', shuffle=False)
+documents = load_files('../../../TEXTDATA/', shuffle=False)
 x_train, x_test, y_train, y_test = train_test_split(
-    documents.data, documents.target, test_size=0.3
+    documents.data, documents.target, test_size=0.05
 )
 
 x_test_copy = x_test.copy()

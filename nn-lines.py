@@ -15,7 +15,7 @@ from sklearn.model_selection import RandomizedSearchCV
 from sklearn.metrics import confusion_matrix, fbeta_score
 
 from sklearn.pipeline import Pipeline
-import utils_normal as utils
+import utils as utils
 
 from keras.utils import np_utils
 from keras.models import Sequential, Model
@@ -51,10 +51,11 @@ def show_overfit_plot():
 
 
 documents = utils.load_dirs_custom([
-    './TAGGED_DATA/SENSITIVE_DATA/html-tagged',
-    './TAGGED_DATA/PERSONAL_DATA/html-tagged',
-    './TAGGED_DATA/NON_PERSONAL_DATA'
+    './TAGGED_DATA_NEW_NEW/SENSITIVE_DATA/html-tagged',
+    './TAGGED_DATA_NEW_NEW/PERSONAL_DATA/html-tagged',
+    './TAGGED_DATA_NEW_NEW/NON_PERSONAL_DATA'
 ])
+
 
 documents = utils.n_gram_documents_range(documents, 8, 8)
 
@@ -123,6 +124,8 @@ all_predicted_lines = []
 all_target_lines = []
 document_confidences = []
 for doc in doc_test:
+    if np.all(doc.targets == 0):
+        continue
     feature_vectors = preprocessor.transform(doc.data)
     predicted_lines = nn.predict(feature_vectors)
 

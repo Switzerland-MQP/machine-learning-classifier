@@ -108,8 +108,7 @@ def convert_categories(categories, individual):
 
 
 def convert_categories_individual(categories):
-    #  category_list = ['name', 'phone', 'professional']
-    category_list = list(all_categories_dict.inv.keys())
+    category_list = ['name', 'phone', 'professional']
     for c in categories:
         if c in category_list:
             return all_categories_dict.inv[c]

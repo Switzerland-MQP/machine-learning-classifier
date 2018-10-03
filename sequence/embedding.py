@@ -1,7 +1,7 @@
 import numpy as np
 from keras.datasets import imdb
 from keras.models import Sequential
-from keras.layers import Dense, LSTM, Flatten
+from keras.layers import Dense, LSTM, Flatten, Dropout
 from keras.layers.convolutional import Conv1D, MaxPooling1D
 from keras.layers.embeddings import Embedding
 from keras.preprocessing import sequence
@@ -48,12 +48,16 @@ embedding_vector_length = 64
 
 def create_model(top_words, embedding_vector_length, max_length):
 	model = Sequential()
-	model.add(Embedding(top_words, embedding_vector_length, input_length=max_length, name="embedding"))
-	#model.add(Flatten())
-	model.add(Conv1D(filters=1, kernel_size=8, padding='same', activation='relu', name="convolution"))
-	#model.add(MaxPooling1D(pool_size=8))
-	model.add(Flatten(name="flat"))
-	#model.add(LSTM(256, dropout=0.2, recurrent_dropout=0.2))
+	model.add(Embedding(top_words, embedding_vector_length, input_length=max_length))
+	model.add(Flatten())
+	model.add(Dense(490, activation="relu"))
+	model.add(Dropout(0.49))
+	model.add(Dense(115, activation="relu"))
+	model.add(Dropout(0.005))
+	model.add(Dense(370, activation="relu"))
+	model.add(Dropout(0.5))
+	model.add(Dense(118, activation="relu"))
+	model.add(Dropout(0.185))
 	model.add(Dense(1, activation='sigmoid'))
 	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
@@ -62,7 +66,7 @@ def create_model(top_words, embedding_vector_length, max_length):
 
 model = create_model(vocabulary_size, embedding_vector_length, max_length)
 print(model.summary())
-history = model.fit(x_train, y_train, epochs=3, batch_size=32,
+history = model.fit(x_train, y_train, epochs=10, batch_size=32,
 								validation_data=(x_test, y_test))
 
 
@@ -71,19 +75,10 @@ print("Accuracy: %.2f%%" % (scores[1]*100))
 
 
 y_predicted = model.predict(x_test)
-y_predicted = np.where(y_predicted > 0.5, 1, 0)
 
 score = fbeta_score(y_predicted, y_test, average=None, beta=2)
 print(f"F2-scores: {score}")
 show_overfit_plot(history)
-
-
-from keras.models import Model
-flat = Model(model.input, model.get_layer("flat").output)
-flat_words = flat.predict(x_test)
-import matplotlib.pyplot as plt
-plt.plot(flat_words[0])
-plt.show()
 
 
 

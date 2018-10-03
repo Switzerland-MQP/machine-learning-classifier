@@ -16,8 +16,8 @@ import utils
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import SGDClassifier
 from sklearn import metrics
-
-kfold = KFold(n_splits=5)
+from sklearn.external import joblib
+kfold = KFold(n_splits=1, shuffle=True)
 
 documents = utils.load_dirs_custom([
     './SENSITIVE_DATA/html-tagged',
@@ -25,10 +25,10 @@ documents = utils.load_dirs_custom([
     './NON_PERSONAL_DATA'
 ])
 
-documents = utils.n_gram_documents_range(documents, 2, 2)
+documents = utils.n_gram_documents_range(documents, 5, 6)
 documents = np.array(documents)
 doc_train, doc_test, = utils.document_test_train_split(
-    documents, 0.20
+    documents, 0.01
 )
 
 argument_sets = []
@@ -37,15 +37,16 @@ for train_index, test_index in kfold.split(documents):
     doc_train, doc_test = documents[train_index], documents[test_index]
     X_train, y_train = utils.convert_docs_to_lines(doc_train)
     X_test, y_test = utils.convert_docs_to_lines(doc_test)
-    argument_sets += [(X_train, X_test, y_train, y_test)]
+    argument_sets += [(X_train, X_test, y_train, y_test)] 
+
+
+
 
 
 
 text_clf = Pipeline([('vect', CountVectorizer(ngram_range=(1, 2))),
                     ('tfidf', TfidfTransformer()),
-										
-                    ('clf', SGDClassifier(loss='hinge', penalty='none', learning_rate='optimal', alpha=1e-4, epsilon=0.1, max_iter=1000, tol=None, shuffle=True)),
-])
+                    ('clf', SGDClassifier(loss='hinge', penalty='none', learning_rate='optimal', alpha=1e-4, epsilon=0.1, max_iter=1000, tol=None, shuffle=True))])
 
 def run_argument_sets(text_clf, argument_sets):
     scores = []
@@ -53,7 +54,7 @@ def run_argument_sets(text_clf, argument_sets):
         (X_train, X_test, y_train, y_test) = s
         print("---Fitting model---")
         text_clf.fit(X_train, y_train)
-
+        joblib.dump(text_clf, 'svm_trained.joblib') 
         print("SVM with SGD")
         documents_predicted = []
         documents_target = []
