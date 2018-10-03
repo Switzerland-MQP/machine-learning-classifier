@@ -43,13 +43,28 @@ Line by line level labeling is done to help predict which PII category types are
      - Personal phone number or someone’s personal work number
    - \<professional\>
      - Profession, Workplace, Education, what someone did at a certain job
+   - \<psychological\>
+   - \<genetic\>
+   - \<mental\>
+   - \<economic\>
+   - \<cultural\>
+   - \<social\>
+   - \<physiological\>
+
 2. Sensitive Personal
    - \<criminal\>	
      - Information relating back to someone’s criminal history or showing that a person has no criminal history
    - \<origin\>
      - Birthplace, ethnicity, nationality
    - \<health\>
-     - Disabilities, hospital visits, health insurance claims
+     - Disabilities, hospital visits, health insurance claims    18: 'religion',
+   - \<political\>
+   - \<philosophical\>
+   - \<unions\>
+   - \<sex-life\>
+   - \<sex-orientation\>
+   - \<biometric\>
+
 ### Tips and Tricks
 - A line is not <professional> if it contains the skills of a person. For example, if they have a section in a CV that only lists out skills, this does not count and will throw off the model. However, if they list a job they had and what they did at that job, then this whole area can be considered <professional>
 - When using multiple labels in multiple lines (i.e. \<name_phone\>) make sure that each line contained within the HTML tag contains each type of PII that is within the tag
