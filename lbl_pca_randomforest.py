@@ -22,26 +22,26 @@ from sklearn.model_selection import KFold
 kf = KFold(n_splits=5, shuffle=True)
 print("---Loading Data---")
 documents = utils.load_dirs_custom([
-    './TEXTDATA/SENSITIVE_DATA/html-tagged',
-    './TEXTDATA/PERSONAL_DATA/html-tagged',
-    './TEXTDATA/NON_PERSONAL_DATA'
+    './SENSITIVE_DATA/html-tagged',
+    './PERSONAL_DATA/html-tagged',
+    './NON_PERSONAL_DATA'
 ])
 
 print("---Creating N_grams---")
 documents = utils.n_gram_documents_range(documents, 2, 2)
 
 
-#  doc_train, doc_test, = utils.document_test_train_split(
-    #  documents, 0.20
-#  )
+doc_data, doc_vault, = utils.document_test_train_split(
+    documents, 0.10
+)
 
-documents = np.array(documents)
+doc_data = np.array(doc_data)
 
 argument_sets = []
-for train_index, test_index in kf.split(documents):
+for train_index, test_index in kf.split(doc_data):
     print("TRAIN:", train_index, "TEST:", test_index)
-    doc_train = documents[train_index]
-    doc_test = documents[test_index]
+    doc_train = doc_data[train_index]
+    doc_test = doc_data[test_index]
 
     X_train, y_train = utils.convert_docs_to_lines(doc_train)
     X_test, y_test = utils.convert_docs_to_lines(doc_test)
@@ -79,61 +79,56 @@ random_search = RandomizedSearchCV(
 
 
 def run_argument_sets(random_search, argument_sets):
-    scores = []
+    lbl_scores = []
+    document_scores = []
     models = []
+    first = True
     for s in argument_sets:
         (X_train, X_test, y_train, y_test) = s
         print("---Fitting model---")
         random_search.fit(X_train, y_train)
+        if first is True:
+            random_search = random_search.best_estimator_
+            first = False
 
-        print("PCA with random forest")
-        documents_predicted = []
-        documents_target = []
-        all_predicted_lines = []
-        all_target_lines = []
-        for doc in doc_test:
-            predicted_lines = random_search.predict(doc.data)
-            all_predicted_lines += list(predicted_lines)
-            all_target_lines += list(doc.targets)
-
-            predicted_doc = utils.classify_doc(predicted_lines)
-            documents_predicted.append(predicted_doc)
-            documents_target.append(doc.category)
+        predicted = random_search.predict(X_test)
+        accuracy = fbeta_score(
+            y_test,
+            predicted,
+            average=None,
+            beta=2
+        )
 
         print("Line by Line ")
         print("Confusion Matrix: \n{}".format(
-            confusion_matrix(all_target_lines, all_predicted_lines)
+            confusion_matrix(y_test, predicted)
         ))
 
-        accuracy = fbeta_score(
-            all_target_lines,
-            all_predicted_lines,
-            average=None,
-            beta=2
-        )
-        scores += [accuracy]
-        models += [random_search.best_estimator_]
+        lbl_scores += [accuracy]
+        #  models += [random_search.best_estimator_]
         print("Accuracy: {}".format(accuracy))
 
-        doc_accuracy = fbeta_score(
-            documents_target,
-            documents_predicted,
-            average=None,
-            beta=2
-        )
+    print("lbl Scores: ", lbl_scores)
+    print("document Scores: ", document_scores)
 
-        print("Document Accuracy: {}".format(doc_accuracy))
-
-        print("Document Confusion Matrix: \n{}".format(
-            confusion_matrix(documents_target, documents_predicted)
-        ))
-
-    print("Scores: ", scores)
-    print("Score mean: ", np.mean(scores))
-    return scores, models
+    return lbl_scores, models
 
 
 #  utils.label_new_document("./testFile.txt", random_search)
 
 
-scores, models = run_argument_sets(random_search, argument_sets)
+lbl_scores, models = run_argument_sets(random_search, argument_sets)
+
+average_lbl_scores = [0, 0, 0]
+count = 0
+
+for s in lbl_scores:
+    average_lbl_scores[0] += s[0]
+    average_lbl_scores[1] += s[1]
+    average_lbl_scores[2] += s[2]
+    count += 1
+
+average_lbl_scores = [x / count for x in average_lbl_scores]
+
+
+print("Average lbl Scores: ", lbl_scores)
