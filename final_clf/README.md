@@ -59,6 +59,7 @@ Line by line level labeling is done to help predict which PII category types are
 ### Examples
 **Base Case**
 \<name\>\<data\>My name is John Smith\</data\>\</name\>
+
 **Multi-line Case**
 \<location\>\<data\>StreetCity,
  State Zip Code\</data\>\</location\>
