@@ -78,16 +78,17 @@ Line by line level labeling is done to help predict which PII category types are
 
 **Multi-line Case:**
 
-\<location\>\<data\>StreetCity,
+\<location\>\<data\>StreetCity,\
  State Zip Code\</data\>\</location\>
 
 **Multiple Data Tags Related in a Line:**
 
-\<name_phone\>\<data\>Name: John Smith | Phone Number: +1(111)1111\</data\>\</name_phone\>
+\<name_phone\>\<data\>Name: John Smith \
+| Phone Number: +1(111)1111\</data\>\</name_phone\>
 
 **Multiple Data Tags Related in Multiple Lines:**
 
-\<name_phone\>\<data\>Name: John Smith | Phone Number: +1(111)1111
+\<name_phone\>\<data\>Name: John Smith | Phone Number: +1(111)1111\
 Name: Jane Doe | Phone Number: +1(222)2222\</data\>\</name_phone\>
 
 
