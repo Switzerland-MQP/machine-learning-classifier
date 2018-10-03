@@ -12,11 +12,11 @@ The second main step is the classification of the different files based on the p
 ## How to Run
 ### OCR
 In command line run:
-...python nameofOcr.py inputDirectory 
+... python nameofOcr.py inputDirectory 
 
 ### Classification
 In command line run:
-...python nameOfClass.py outputdirectory
+... python nameOfClass.py outputdirectory
 
 # Data Labeling Instructions
 If you would like to train a model further train your own model, then more data labeling and model training has to occur. This can be done a few ways when used within our system, and has to be done on the text versions of the documents. If you would like to find these text versions, after running the OCR on new training data find XXXXX within your file system. 
@@ -30,26 +30,26 @@ Document level labeling is used to train the models that classify documents into
 ## Line by Line Level Labeling
 Line by line level labeling is done to help predict which PII category types are within a certain document, and is also used to help determine where this information in the document lies. This labeling is done on using custom HTML tags that we have created:
 1. Personal
-..*<name>
-..*<id-number>
-...Health care id numbers, Social Security Numbers, bank account numbers
-..*<location>
-...current location, personal address, work address if it can be related back to a certain individual clearly
-..*<online-id>
-...Email, Fax
-..*<dob>
-...Date of Birth
-..*<phone>
-...Personal phone number or someone’s personal work number
-..*<professional>
-...Profession, Workplace, Education, what someone did at a certain job
+..* <name>
+..* <id-number>
+... Health care id numbers, Social Security Numbers, bank account numbers
+..* <location>
+... current location, personal address, work address if it can be related back to a certain individual clearly
+..* <online-id>
+... Email, Fax
+..* <dob>
+... Date of Birth
+..* <phone>
+... Personal phone number or someone’s personal work number
+..* <professional>
+... Profession, Workplace, Education, what someone did at a certain job
 2. Sensitive Personal
-..*<criminal>	
-...Information relating back to someone’s criminal history or showing that a person has no criminal history
-..*<origin>
-...Birthplace, ethnicity, nationality
-..*<health>
-...Disabilities, hospital visits, health insurance claims
+..* <criminal>	
+... Information relating back to someone’s criminal history or showing that a person has no criminal history
+..* <origin>
+... Birthplace, ethnicity, nationality
+..* <health>
+... Disabilities, hospital visits, health insurance claims
 ### Tips and Tricks
 *A line is not <professional> if it contains the skills of a person. For example, if they have a section in a CV that only lists out skills, this does not count and will throw off the model. However, if they list a job they had and what they did at that job, then this whole area can be considered <professional>
 *When using multiple labels in multiple lines (i.e. <name_phone>) make sure that each line contained within the HTML tag contains each type of PII that is within the tag
