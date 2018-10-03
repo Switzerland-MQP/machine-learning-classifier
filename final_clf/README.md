@@ -57,17 +57,21 @@ Line by line level labeling is done to help predict which PII category types are
 - Run `cat.sh` after you finish labeling to check that there is no mistakes, this will generate a file parse-errors.txt which will say which documents have errors and why (it will also print this out to the terminal)
 
 ### Examples
-**Base Case**
+**Base Case:**
+
 \<name\>\<data\>My name is John Smith\</data\>\</name\>
 
-**Multi-line Case**
+**Multi-line Case:**
+
 \<location\>\<data\>StreetCity,
  State Zip Code\</data\>\</location\>
 
-**Multiple Data Tags Related in a Line**
+**Multiple Data Tags Related in a Line:**
+
 \<name_phone\>\<data\>Name: John Smith | Phone Number: +1(111)1111\</data\>\</name_phone\>
 
-**Multiple Data Tags Related in Multiple Lines**
+**Multiple Data Tags Related in Multiple Lines:**
+
 \<name_phone\>\<data\>Name: John Smith | Phone Number: +1(111)1111
 Name: Jane Doe | Phone Number: +1(222)2222\</data\>\</name_phone\>
 
