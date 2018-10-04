@@ -15,6 +15,7 @@ from sklearn.metrics import fbeta_score, confusion_matrix
 from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout
 from keras.regularizers import l1
+from keras.callbacks import EarlyStopping
 
 from keras import backend as K
 
@@ -24,7 +25,7 @@ from keras.utils import np_utils
 
 documents = load_files('../TEXTDATA/', shuffle=True)
 x_train, x_test, y_train, y_test = train_test_split(
-    documents.data, documents.target, test_size=0.3
+    documents.data, documents.target, test_size=0.1
 )
 
 x_test_copy = x_test.copy()
@@ -34,12 +35,6 @@ preprocessing = Pipeline([('count', CountVectorizer()),
 													('pca', TruncatedSVD(n_components=430))])
 preprocessing.fit(x_train)
 x_train, x_test = (preprocessing.transform(x_train), preprocessing.transform(x_test))
-"""
-x_train = np.load('./npy/2/x_train.npy')
-x_test =  np.load('./npy/2/x_test.npy')
-y_train = np.load('./npy/2/y_train.npy')
-y_test =  np.load('./npy/2/y_test.npy')
-"""
 print("Finished data preprocessing - {} elapsed".format(time.time()-start))
 
 
@@ -47,19 +42,25 @@ input_shape = x_train.shape[1]
 
 
 nn = Sequential()
-nn.add(Dense(16, activation='relu', input_shape=(input_shape,)))
+nnn = Sequential()
+nn.add(Dense(128, activation='relu', input_shape=(input_shape,)))
 nn.add(Dropout(0.25))
-#nn.add(Dense(8, activation='relu'))
-#nn.add(Dropout(0.5))
-nn.add(Dense(3,  activation='softmax', name="out_layer"))
+nn.add(Dense(32, activation='relu'))
+nn.add(Dropout(0.25))
+nn.add(Dense(3,  activation='sigmoid', name="out_layer"))
 nn.compile(loss= 'categorical_crossentropy',
            optimizer='adam',
            metrics=['mean_squared_logarithmic_error'])
-
 print("Begin fitting network")
 
 y_train = np_utils.to_categorical(y_train)
 y_test_onehot = np_utils.to_categorical(y_test)
+
+
+early_stopping_callback = EarlyStopping(monitor='val_loss',
+				min_delta=0, patience=12, verbose=0, mode='auto')
+
+
 
 def fit(batch_size, epochs):
 	global x_train, y_train, x_test, y_test_onehot
@@ -67,7 +68,10 @@ def fit(batch_size, epochs):
 								batch_size=batch_size,
 								epochs=epochs,
 								verbose=0,
-								validation_data=(x_test, y_test_onehot))
+								validation_data=(x_test, y_test_onehot),
+								callbacks=[early_stopping_callback])
+stopped = early_stopping_callback.stopped_epoch
+
 
 history = fit(196, 500)
 
@@ -184,13 +188,19 @@ confidences = np.array(to_1_interval(confidences))
 
 
 for i in range(len(indices)):
-	doc_path = unlabeled.filenames[indices][i]
-	confidence = confidences[indices][i]
+	if np.argmax(predicted[indices[i]]) != 2:
+		continue
+	doc_path = unlabeled.filenames[indices[i]]
+	confidence = confidences[indices[i]]
 	filename = f"{i}-{confidence:.3f}-{doc_path[33:]}"
-	print(filename)	
-	#f = open('../confidence_out/document_level_snooping/'+filename, "w+")
-	#f.write(unlabeled.data[indices[i]].decode('utf-8'))
-	#f.close() 
+	print(filename)
+
+	#f = open('./confidence_out/'+filename, "w+")
+	#infile = open(doc_path)
+	#write_data = infile.read()
+	#f.write(write_data)
+	#f.close()
+
 
 plt.plot(confidences[indices])
 plt.show()
