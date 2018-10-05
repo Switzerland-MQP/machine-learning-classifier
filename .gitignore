@@ -135,3 +135,10 @@ outputfolder
 
 /final_clf/documents/
 /final_clf/pipeline/models/preprocessing.pickle
+
+/final_clf/models/document-clf/preprocessing.pickle
+/final_clf/models/document-clf/model.h5
+/final_clf/models/document-clf/model.json
+
+
+/final_clf/models/category-clf/preprocessing.pickle

@@ -20,12 +20,13 @@ from keras.callbacks import EarlyStopping
 from keras import backend as K
 
 import numpy as np
+import pickle
 
 from keras.utils import np_utils
 
 documents = load_files('../../TEXTDATA/', shuffle=False)
 x_train, x_test, y_train, y_test = train_test_split(
-    documents.data, documents.target, test_size=0.05
+    documents.data, documents.target, test_size=0.15
 )
 
 x_test_copy = x_test.copy()
@@ -34,8 +35,14 @@ preprocessing = Pipeline([('count', CountVectorizer()),
 												  ('tfidf', TfidfTransformer()),
 													('pca', TruncatedSVD(n_components=430))])
 preprocessing.fit(x_train)
+f = open("./document-clf/preprocessing.pickle", "wb")
+f.write(pickle.dumps(preprocessing))
+f.close()
+print("Finished dumping pickle")
 x_train, x_test = (preprocessing.transform(x_train), preprocessing.transform(x_test))
 print("Finished data preprocessing - {} elapsed".format(time.time()-start))
+
+
 
 early_stopping_callback = EarlyStopping(monitor='val_loss',
 				min_delta=0, patience=12, verbose=0, mode='auto')
@@ -228,10 +235,10 @@ def show_variance_plot():
 ### Save model configuration and weights ###
 def save():
 	model_json = nn.to_json()
-	with open("document-clf/model2.json", "w") as json_file:
+	with open("./document-clf/model.json", "w") as json_file:
 		json_file.write(model_json)
 	json_file.close()
-	nn.save_weights("document-clf/model2.h5")
+	nn.save_weights("./document-clf/model.h5")
 	
 save()
 
