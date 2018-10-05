@@ -34,3 +34,4 @@ nltk
 gensim
 bokeh
 bidict
+click
