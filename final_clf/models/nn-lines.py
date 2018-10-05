@@ -22,6 +22,7 @@ from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout
 from keras.regularizers import l1
 import keras.backend as K
+import pickle
 
 import matplotlib.pyplot as plt
 
@@ -51,9 +52,9 @@ def show_overfit_plot():
 
 
 documents = utils.load_dirs_custom([
-    '../../../TAGGED_DATA_NEW_NEW/SENSITIVE_DATA/html-tagged',
-    '../../../TAGGED_DATA_NEW_NEW/PERSONAL_DATA/html-tagged',
-    '../../../TAGGED_DATA_NEW_NEW/NON_PERSONAL_DATA'
+    '../../TAGGED_DATA_NEW_NEW/SENSITIVE_DATA/html-tagged',
+    '../../TAGGED_DATA_NEW_NEW/PERSONAL_DATA/html-tagged',
+    '../../TAGGED_DATA_NEW_NEW/NON_PERSONAL_DATA'
 ])
 
 
@@ -77,6 +78,11 @@ preprocessor = Pipeline([('vect', CountVectorizer()),
                      ('tfidf', TfidfTransformer()),
                      ('pca', TruncatedSVD(n_components=430))])
 preprocessor.fit(x_train)
+f = open("./line-clf/preprocessing.pickle", "wb")
+f.write(pickle.dumps(preprocessor))
+f.close()
+print("Finished dumping preprocessing pickle")
+
 x_train, x_test = (preprocessor.transform(x_train), preprocessor.transform(x_test))
 print("Finished data preprocessing - {} elapsed".format(time.time()-start))
 	
@@ -210,10 +216,10 @@ plt.show()
 ### Save model configuration and weights ###
 def save():
 	model_json = nn.to_json()
-	with open("line-clf/model.json", "w") as json_file:
+	with open("./line-clf/model.json", "w") as json_file:
 		json_file.write(model_json)
 	json_file.close()
-	nn.save_weights("line-clf/model.h5")
+	nn.save_weights("./line-clf/model.h5")
 
 save()
 

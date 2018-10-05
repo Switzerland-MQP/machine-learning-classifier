@@ -21,6 +21,7 @@ import utils
 from keras import backend as K
 
 import numpy as np
+import pickle
 
 from keras.utils import np_utils
 
@@ -28,9 +29,9 @@ from keras.utils import np_utils
 
 
 documents = utils.load_dirs_custom([
-    '../../../TAGGED_DATA_NEW_NEW/SENSITIVE_DATA/html-tagged',
-    '../../../TAGGED_DATA_NEW_NEW/PERSONAL_DATA/html-tagged',
-    '../../../TAGGED_DATA_NEW_NEW/NON_PERSONAL_DATA'
+    '../../TAGGED_DATA_NEW_NEW/SENSITIVE_DATA/html-tagged',
+    '../../TAGGED_DATA_NEW_NEW/PERSONAL_DATA/html-tagged',
+    '../../TAGGED_DATA_NEW_NEW/NON_PERSONAL_DATA'
 ], individual=True)
 
 x = []
@@ -56,7 +57,7 @@ y = y_encoded
 
 
 x_train, x_test, y_train, y_test = train_test_split(
-    x, y, test_size=0.3, shuffle=True
+    x, y, test_size=0.15, shuffle=True
 )
 
 x_train = np.array(x_train)
@@ -69,8 +70,16 @@ preprocessing = Pipeline([('count', CountVectorizer()),
 												  ('tfidf', TfidfTransformer()),
 													('pca', TruncatedSVD(n_components=430))])
 preprocessing.fit(x_train)
+f = open("./category-clf/preprocessing.pickle", "wb")
+f.write(pickle.dumps(preprocessing))
+f.close()
+print("Finished dumping pickle")
 x_train, x_test = (preprocessing.transform(x_train), preprocessing.transform(x_test))
 print("Finished data preprocessing - {} elapsed".format(time.time()-start))
+
+
+
+
 
 early_stopping_callback = EarlyStopping(monitor='val_loss',
 				min_delta=0, patience=12, verbose=0, mode='auto')
@@ -133,13 +142,14 @@ def cutoff_graph(predicted_category, y_category):
 	return cutoffs[5]
 
 
-
+cutoff_dict = {}
 for i in range(22):
 	category = utils.all_categories_dict[i+1]
 	predicted_category = predicted[:,i+1]
 	y_category = y_test[:,i+1]
 
 	cutoff = cutoff_graph(predicted_category, y_category)
+	cutoff_dict[category] = cutoff
 
 	predicted_category = np.where(predicted_category > cutoff, 1, 0)
 	#score = fbeta_score(predicted_category, y_category, average=None, beta=3)
@@ -148,6 +158,10 @@ for i in range(22):
 	print(f"Accuracy for category: {category} : {score} -- f2: {f2}")
 	print(confusion_matrix(y_category, predicted_category))	
 
+f = open("./category-clf/cutoffs.pickle", "wb")
+f.write(pickle.dumps(cutoff_dict))
+f.close()
+print("Finished dumping cutoff pickle")
 
 
 
@@ -177,10 +191,10 @@ def show_overfit_plot():
 ### Save model configuration and weights ###
 def save():
 	model_json = nn.to_json()
-	with open("category-clf/model.json", "w") as json_file:
+	with open("./category-clf/model.json", "w") as json_file:
 		json_file.write(model_json)
 	json_file.close()
-	nn.save_weights("category-clf/model.h5")
+	nn.save_weights("./category-clf/model.h5")
 
-
+save()
 
