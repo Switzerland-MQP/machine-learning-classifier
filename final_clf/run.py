@@ -11,12 +11,8 @@
 #
 #
 #
-
-
 ### Begin imports ###
 
-import time
-start = time.time()
 from sklearn.datasets import load_files
 
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
@@ -30,71 +26,73 @@ from keras.utils import np_utils
 from keras.models import model_from_json
 import utils
 import pickle
-### End imports ###
+import time
+start = time.time()
+# End imports #
 
 
-
-
-
-### Begin models ###
+# Begin models #
 def load_keras_model(json_path, weights_path):
-	json_file = open(json_path, 'r')
-	loaded_model_json = json_file.read()
-	json_file.close()
-	loaded_model = model_from_json(loaded_model_json)
-	loaded_model.load_weights(weights_path)
-	return loaded_model
+    json_file = open(json_path, 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    loaded_model = model_from_json(loaded_model_json)
+    loaded_model.load_weights(weights_path)
+    return loaded_model
+
 
 def confidence(predicted_vec):
-	predicted_vec = np.array(predicted_vec)
-	norm = np.linalg.norm(np.sum(predicted_vec))
-	divided = (predicted_vec.T/norm).T
-	stdev = np.std(divided)
-	return stdev
+    predicted_vec = np.array(predicted_vec)
+    norm = np.linalg.norm(np.sum(predicted_vec))
+    divided = (predicted_vec.T/norm).T
+    stdev = np.std(divided)
+    return stdev
 
 
-print("Loading models from disk...")
-preprocessing = pickle.load(open("./pipeline/models/preprocessing.pickle", "rb"))
-document_clf = load_keras_model("./pipeline/models/document-clf/model.json",
-																"./pipeline/models/document-clf/model.h5")
-category_clf = load_keras_model("./pipeline/models/category-clf/model.json",
-																"./pipeline/models/category-clf/model.h5")
-#TODO: load line clf
-print("Done loading models from disk.")
+def run_model(filepath):
+    print("Loading models from disk...")
+    preprocessing = pickle.load(open("./pipeline/models/preprocessing.pickle", "rb"))
+    document_clf = load_keras_model("./pipeline/models/document-clf/model.json",
+                                    "./pipeline/models/document-clf/model.h5")
+    category_clf = load_keras_model("./pipeline/models/category-clf/model.json",
+                                    "./pipeline/models/category-clf/model.h5")
+    #  TODO: load line clf
+    print("Done loading models from disk.")
 
-import ipdb
+    loaded_documents = utils.load_dir_custom(filepath)
+    print(loaded_documents)
 
+    # TODO: line preprocessing and prediction
+    results = []
+    for doc in loaded_documents:
+        path = doc.path
+        text = doc.text
+        text_pca = preprocessing.transform([text])
 
-loaded_documents = load_files('./documents/text_documents', shuffle=False)
+        #  Predict document class
+        predicted_vec = document_clf.predict(text_pca)
+        predicted_class = np.argmax(predicted_vec, axis=1)
 
-# TODO: line preprocessing and prediction
-for i in range(len(loaded_documents.data)):
-	path = loaded_documents.filenames[i]
-	text = loaded_documents.data[i]
-	text_pca = preprocessing.transform([text])
+        #  Predict individual categories
+        predicted_categories = category_clf.predict([text_pca])[0]
+        high_probability_categories = []
+        for i in range(22):
+            category = utils.all_categories_dict[i+1]
+            cutoff = 0.002  # TODO: make this cutoff programmatic
+            # We're going to have to just pick a number for each category
+            if predicted_categories[i+1] > 0.002:
+                high_probability_categories.append(category)
 
-	#Predict document class
-	predicted_vec = document_clf.predict(text_pca)
-	predicted_class = np.argmax(predicted_vec, axis=1)
+                # Could also just take the highest 5 categories
 
-	#Predict individual categories
-	predicted_categories = category_clf.predict([text_pca])[0]
-	high_probability_categories = []
-	for i in range(22):
-		category = utils.all_categories_dict[i+1]
-		cutoff = 0.002 # TODO: make this cutoff programmatic
-										# We're going to have to just pick a number for each category
-		if predicted_categories[i+1] > 0.002:
-			high_probability_categories.append(category)
+            # TODO: Line prediction
 
-		# Could also just take the highest 5 categories
+        results.append((path, predicted_class))
+        print(f"File path: {path}")
+        print(f"Predicted class: {predicted_class} with confidence {confidence(predicted_vec)}")
+        print(f"High probability categories: {high_probability_categories}")
 
-	# TODO: Line prediction
+        # TODO: put original file in new directory
 
-	print(f"File path: {path}")
-	print(f"Predicted class: {predicted_class} with confidence {confidence(predicted_vec)}")
-	print(f"High probability categories: {high_probability_categories}")
-
-	# TODO: put original file in new directory
-
-	ipdb.set_trace()
+        #  ipdb.set_trace()
+    return results

@@ -9,7 +9,6 @@ def getDestFilename(dest, file):
     destFileName = "{}/{}.txt".format(dest, file)
     if os.path.exists(destFileName):
         destFileName = "{}/{}-{}.txt".format(dest, file, str(uuid.uuid4()))
-    print("Dest File Name: ", destFileName)
     return destFileName
 
 
@@ -30,16 +29,16 @@ def valid(file):
 def convert_directory(source, dest):
     if not os.path.isdir(source):
         print("Please give a directory as the first argument")
-        return
+        os.exit()
 
     if not os.path.isdir(dest):
         os.makedirs(dest)
 
+    original_file_names = []
+    failed_files = []
     for root, dirs, files in os.walk(source):
-        path = root.split(os.sep)
-
         for file in files:
-            print("File: ", file)
+            #  print("File: ", file)
 
             if not valid(file):
                 continue
@@ -47,22 +46,20 @@ def convert_directory(source, dest):
             full_file_name = root + "/" + file
 
             try:
-                text = to_plaintext(full_file_name)
-            except:
+                text = to_plaintext.to_plaintext(full_file_name)
+            except Exception as e:
                 logfile = open("errors.log", "a")
-                logfile.write("Couldn't convert file: {}\n\r".format(
-                    full_file_name
+                logfile.write("Couldn't convert file: {} with message: {}\n".format(
+                    full_file_name, e
                 ))
                 logfile.close()
+                failed_files.append(full_file_name)
                 continue
 
             destFileName = getDestFilename(dest, file)
             destFile = open(destFileName, "wb")
             destFile.write(text)
             destFile.close()
-
-
-if __name__ == "__main__":
-    source = sys.argv[1]
-    dest = sys.argv[2]
-    convert_directory(source, dest)
+            original_file_names += file
+    print(f"Failed files: {failed_files}")
+    return failed_files

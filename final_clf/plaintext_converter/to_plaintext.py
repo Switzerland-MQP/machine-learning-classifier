@@ -12,5 +12,5 @@ def to_plaintext(filename):
         return text
 
 
-if __name__ == '__main__':
-    print(to_plaintext(sys.argv[1]))
+#  if __name__ == '__main__':
+    #  print(to_plaintext(sys.argv[1]))

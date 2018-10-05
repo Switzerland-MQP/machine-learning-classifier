@@ -3,7 +3,6 @@ import os
 from parser.run_parser import run_parser
 from sklearn.model_selection import train_test_split
 from bidict import bidict
-import ipdb
 
 
 personal_categories_dict = bidict({
@@ -69,7 +68,7 @@ def document_test_train_split(documents, test_size):
     return doc_train, doc_test
 
 
-def load_dir_custom(directory, individual):
+def load_dir_custom(directory, individual=False):
     documents = read_dir(directory)
     fill_docs(documents, individual)
     return documents
@@ -80,8 +79,10 @@ def fill_docs(documents, individual=False):
         data = np.array([])
         targets = np.array([])
         contexts = np.array([])
+        full_text = ''
         for line in doc.lines:
             data = np.append(data, [line.text])
+            full_text += line.text
             targets = np.append(
                 targets,
                 [convert_categories(line.categories, individual)]
@@ -91,6 +92,7 @@ def fill_docs(documents, individual=False):
                 [convert_categories(line.context, individual)]
             )
         doc.data = data
+        doc.text = full_text
         doc.contexts = contexts
         doc.targets = targets
         doc.category = classify_doc(targets)
@@ -199,7 +201,6 @@ def label_documents_dir(docpath, clf):
     documents = read_dir(docpath)
     fill_docs(documents)
     for doc in documents:
-        #  ipdb.set_trace()
         label_single_document(doc, clf)
 
 
@@ -225,6 +226,7 @@ class Document:
     def __init__(self, path, lines):
         self.path = path
         self.lines = lines
+        self.text = ''
         self.data = np.array([])
         self.targets = np.array([])
         self.contexts = np.array([])

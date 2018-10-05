@@ -18,4 +18,4 @@ def clean_arrows(directory):
             with open(full_path, 'w') as f:
                 f.write(filedata)
 
-clean_arrows('./arrows')
+#  clean_arrows('./arrows')
