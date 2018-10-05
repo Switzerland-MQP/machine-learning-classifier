@@ -109,4 +109,5 @@ def run_model(filepath):
 
         # TODO: put original files in new directory corresponding to class
         # TODO: write metadata file to this new directory
+    return results
 
