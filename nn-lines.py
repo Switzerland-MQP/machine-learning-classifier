@@ -190,13 +190,13 @@ for i in range(len(confidences[indices])):
 	except:
 		pass	
 
-n = 3500
+n = 5000
 
 predicted = np.where(predicted[indices][n:] >= 0.5, 1, 0)
 y = all_target_lines[indices][n:]
 f2 = fbeta_score(predicted, y, average=None, beta=2)
 print(f"F2-scores for lines above {n}: {f2}")
-
+print(confusion_matrix(predicted, y))
 
 
 plt.plot(to_1_interval(smooth(0.92, accuracies)))

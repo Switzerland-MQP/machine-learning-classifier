@@ -4,13 +4,8 @@
 ## Harry Sadoyan, Leo Grande                 ##
 ###############################################
 
-# Pipeline steps:
-#
-# 1. Convert directory of documents (pdfs, excel, word, text) into text files
-#
-#
-#
-#
+# Make it so that if the document predictor predicts non-personal, we don't do category or line testing
+#Make it so that if the document predictor predicts personal, then don't predict sensitive categories.
 
 
 ### Begin imports ###
@@ -54,15 +49,13 @@ def confidence(predicted_vec):
 
 
 print("Loading models from disk...")
-preprocessing = pickle.load(open("./pipeline/models/preprocessing.pickle", "rb"))
-document_clf = load_keras_model("./pipeline/models/document-clf/model.json",
-																"./pipeline/models/document-clf/model.h5")
-category_clf = load_keras_model("./pipeline/models/category-clf/model.json",
-																"./pipeline/models/category-clf/model.h5")
+preprocessing = pickle.load(open("./models/preprocessing.pickle", "rb"))
+document_clf = load_keras_model("./models/document-clf/model.json",
+																"./models/document-clf/model.h5")
+category_clf = load_keras_model("./models/category-clf/model.json",
+																"./models/category-clf/model.h5")
 #TODO: load line clf
 print("Done loading models from disk.")
-
-import ipdb
 
 
 loaded_documents = load_files('./documents/text_documents', shuffle=False)
@@ -97,4 +90,3 @@ for i in range(len(loaded_documents.data)):
 
 	# TODO: put original file in new directory
 
-	ipdb.set_trace()

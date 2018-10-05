@@ -23,7 +23,7 @@ import numpy as np
 
 from keras.utils import np_utils
 
-documents = load_files('../../../TEXTDATA/', shuffle=False)
+documents = load_files('../../TEXTDATA/', shuffle=False)
 x_train, x_test, y_train, y_test = train_test_split(
     documents.data, documents.target, test_size=0.05
 )
@@ -228,12 +228,12 @@ def show_variance_plot():
 ### Save model configuration and weights ###
 def save():
 	model_json = nn.to_json()
-	with open("document-clf/model.json", "w") as json_file:
+	with open("document-clf/model2.json", "w") as json_file:
 		json_file.write(model_json)
 	json_file.close()
-	nn.save_weights("document-clf/model.h5")
+	nn.save_weights("document-clf/model2.h5")
 	
-
+save()
 
 
 
