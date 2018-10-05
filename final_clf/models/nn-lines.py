@@ -79,7 +79,7 @@ preprocessor = Pipeline([('vect', CountVectorizer()),
                      ('pca', TruncatedSVD(n_components=430))])
 preprocessor.fit(x_train)
 f = open("./line-clf/preprocessing.pickle", "wb")
-f.write(pickle.dumps(preprocessing))
+f.write(pickle.dumps(preprocessor))
 f.close()
 print("Finished dumping preprocessing pickle")
 

@@ -1,15 +1,14 @@
 ###############################################
 ## Final classifier pipeline                 ##
-## Authors: Griffin Bishop, Sam Pridotkas,   ##
-## Harry Sadoyan, Leo Grande                 ##
+## Authors: Griffin Bishop, Harry Sadoyan,   ##
+## Sam Pridotkas, Leo Grande                 ##
 ###############################################
 
-# Make it so that if the document predictor predicts non-personal, we don't do category or line testing
-#Make it so that if the document predictor predicts personal, then don't predict sensitive categories.
+# 1. Make it so that if the document predictor predicts non-personal, we don't do category or line testing
+# 1a. Make it so that if the document predictor predicts personal, then don't predict sensitive categories.
 
 
-### Begin imports ###
-
+########################################### Begin imports
 import time
 start = time.time()
 from sklearn.datasets import load_files
@@ -25,13 +24,12 @@ from keras.utils import np_utils
 from keras.models import model_from_json
 import utils
 import pickle
-### End imports ###
+########################################### End imports
 
 
 
 
-
-### Begin models ###
+########################################### Begin models
 def load_keras_model(json_path, weights_path):
 	json_file = open(json_path, 'r')
 	loaded_model_json = json_file.read()
@@ -48,19 +46,35 @@ def confidence(predicted_vec):
 	return stdev
 
 
+
+
+###########################################
 print("Loading models from disk...")
-preprocessing = pickle.load(open("./models/preprocessing.pickle", "rb"))
+document_preprocessing = pickle.load(open("./models/document-clf/preprocessing.pickle", "rb"))
 document_clf = load_keras_model("./models/document-clf/model.json",
 																"./models/document-clf/model.h5")
+
+category_preprocessing = pickle.load(open("./models/category-clf/preprocessing.pickle", "rb"))
+cutoffs = pickle.load(open("./models/category-clf/cutoffs.pickle", "rb"))
 category_clf = load_keras_model("./models/category-clf/model.json",
 																"./models/category-clf/model.h5")
-#TODO: load line clf
+
+line_preprocessing = pickle.load(open("./models/line-clf/preprocessing.pickle", "rb"))
+line_clf = load_keras_model("./models/line-clf/model.json",
+														"./models/line-clf/model.h5")
 print("Done loading models from disk.")
+###########################################
 
 
 loaded_documents = load_files('./documents/text_documents', shuffle=False)
 
-# TODO: line preprocessing and prediction
+# Line preprocessing INCOMPLETE?
+loaded_line_documents = utils.load_dirs_custom(['./documents/text_documents/text_documents'])
+line_groups = utils.n_gram_documents_range(loaded_line_documents, 8, 8)
+
+
+
+
 for i in range(len(loaded_documents.data)):
 	path = loaded_documents.filenames[i]
 	text = loaded_documents.data[i]
@@ -75,12 +89,9 @@ for i in range(len(loaded_documents.data)):
 	high_probability_categories = []
 	for i in range(22):
 		category = utils.all_categories_dict[i+1]
-		cutoff = 0.002 # TODO: make this cutoff programmatic
-										# We're going to have to just pick a number for each category
-		if predicted_categories[i+1] > 0.002:
+		cutoff = cutoffs[category]
+		if predicted_categories[i+1] > cutoff:
 			high_probability_categories.append(category)
-
-		# Could also just take the highest 5 categories
 
 	# TODO: Line prediction
 
@@ -88,5 +99,6 @@ for i in range(len(loaded_documents.data)):
 	print(f"Predicted class: {predicted_class} with confidence {confidence(predicted_vec)}")
 	print(f"High probability categories: {high_probability_categories}")
 
-	# TODO: put original file in new directory
+	# TODO: put original files in new directory corresponding to class
+	# TODO: write metadata file to this new directory
 
