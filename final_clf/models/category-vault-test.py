@@ -11,7 +11,7 @@ from sklearn.pipeline import Pipeline
 
 from sklearn.metrics import fbeta_score, confusion_matrix, recall_score 
 
-
+from keras.models import model_from_json
 from keras.models import Sequential, Model
 from keras.layers import Dense, Dropout
 from keras.regularizers import l1
@@ -28,9 +28,9 @@ from keras.utils import np_utils
 
 
 documents = utils.load_dirs_custom([
-    '../../TAGGED_DATA_NEW_NEW/SENSITIVE_DATA/html-tagged',
-    '../../TAGGED_DATA_NEW_NEW/PERSONAL_DATA/html-tagged',
-    '../../TAGGED_DATA_NEW_NEW/NON_PERSONAL_DATA'
+    '../../Vault/Sensitive',
+    '../../Vault/Personal',
+    '../../Vault/Non-personal'
 ], individual=True)
 
 x = []
@@ -52,7 +52,7 @@ for categories in y:
 		i = utils.all_categories_dict.inv[category]
 		one_hot_encoded[i] = 1
 	y_encoded += [one_hot_encoded]
-y = y_encoded
+y = np.array(y_encoded)
 
 
 
@@ -76,14 +76,13 @@ predicted = clf.predict(x)
 
 
 
-cutoff_dict = {}
+cutoffs = pickle.load(open("./category-clf/cutoffs.pickle", "rb"))
 for i in range(22):
 	category = utils.all_categories_dict[i+1]
 	predicted_category = predicted[:,i+1]
-	y_category = y_test[:,i+1]
+	y_category = y[:,i+1]
 
-	cutoff = cutoff_graph(predicted_category, y_category)
-	cutoff_dict[category] = cutoff
+	cutoff = cutoffs[category]
 
 	predicted_category = np.where(predicted_category > cutoff, 1, 0)
 	#score = fbeta_score(predicted_category, y_category, average=None, beta=3)
@@ -92,43 +91,4 @@ for i in range(22):
 	print(f"Accuracy for category: {category} : {score} -- f2: {f2}")
 	print(confusion_matrix(y_category, predicted_category))	
 
-f = open("./category-clf/cutoffs.pickle", "wb")
-f.write(pickle.dumps(cutoff_dict))
-f.close()
-print("Finished dumping cutoff pickle")
-
-
-
-elapsed = time.time() - start
-print("Elapsed time:", elapsed)
-print(f"Stopped at epoch {stopped}")
-
-def print_results(predicted, y_test):
-	f2_scores = fbeta_score(y_test, predicted, average=None, beta=2)
-
-	print("F-2 scores: {}  | Average: {}".format(f2_scores, np.mean(f2_scores)))
-
-	print("Confusion matrix: \n{}".format(confusion_matrix(y_test, predicted)))
-
-#print_results(predicted_vec, y_test)
-
-def show_overfit_plot():
-	plt.plot(history.history['loss'])
-	plt.plot(history.history['val_loss'])
-	plt.legend(['train','test'], loc='upper left')
-	plt.show()
-
-#show_overfit_plot()
-
-
-
-### Save model configuration and weights ###
-def save():
-	model_json = nn.to_json()
-	with open("./category-clf/model.json", "w") as json_file:
-		json_file.write(model_json)
-	json_file.close()
-	nn.save_weights("./category-clf/model.h5")
-
-save()
 
