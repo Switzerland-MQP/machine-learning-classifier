@@ -38,9 +38,9 @@ clf = load_keras_model("./line-clf/model.json",
 											"./line-clf/model.h5")
 
 documents = utils.load_dirs_custom([
-    'Sensitive',
-    'Personal',
-    'Non-Personal'
+    '../../Vault/Sensitive',
+    '../../Vault/Personal',
+    '../../Vault/Non-Personal'
 ])
 documents = utils.n_gram_documents_range(documents, 8, 8)
 x, y = utils.convert_docs_to_lines(documents)
