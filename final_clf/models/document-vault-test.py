@@ -21,6 +21,7 @@ from keras import backend as K
 
 import numpy as np
 import pickle
+import utils
 
 from keras.utils import np_utils
 
@@ -37,9 +38,9 @@ clf = load_keras_model("./document-clf/model.json",
 											"./document-clf/model.h5")
 
 documents = utils.load_dirs_custom([
-    '../../SUBSET/SENSITIVE_DATA/html-tagged',
-    '../../SUBSET/PERSONAL_DATA/html-tagged',
-    '../../SUBSET/NON_PERSONAL_DATA'
+    '../../Vault/Sensitive',
+    '../../Vault/Personal',
+    '../../Vault/non-personal'
 ])
 
 x = []
@@ -54,12 +55,24 @@ for document in documents:
 	x += ['\n'.join(document.data)]
 	y_categories += [categories]
 
-personal_categories = utils.personal_categories_dict.values()
-sensitive_categories = utils.sensitive_cateogires_dict.values()
+personal_categories = list(utils.personal_categories_dict.values())
+sensitive_categories = list(utils.sensitive_categories_dict.values())
 
 y = []
 for categories in y_categories:
-	
+	document_bucket = 0
+	for category in categories:
+		if category in personal_categories and document_bucket == 0:
+			document_bucket = 1
+		elif category in sensitive_categories:
+			document_bucket = 2
+	y.append(document_bucket)
+y = np.array(y)
+
+### End preprocessing
+
+x = preprocessing.transform(x)
+y_predicted = np.argmax(clf.predict(x), axis=1)
 
 
 
@@ -73,10 +86,6 @@ def recall(y_true, y_pred):
 			total = sum(row)
 			scores.append(correct/total)
 	return scores 
-
-
-
-
 
 def print_results(predicted, y):
 	print("Classifier accuracy: {}".format(np.mean(predicted == y)))
