@@ -23,8 +23,13 @@ from keras.layers import Dense, Dropout
 from keras.regularizers import l1
 import keras.backend as K
 import pickle
+import os
 
 import matplotlib.pyplot as plt
+
+def ensure_directory(directory):
+    if not os.path.isdir(directory):
+        os.makedirs(directory)
 
 def smooth(keep, arr):
 	smoothed = []
@@ -52,9 +57,9 @@ def show_overfit_plot():
 
 
 documents = utils.load_dirs_custom([
-    '../../TAGGED_DATA_NEW_NEW/SENSITIVE_DATA/html-tagged',
-    '../../TAGGED_DATA_NEW_NEW/PERSONAL_DATA/html-tagged',
-    '../../TAGGED_DATA_NEW_NEW/NON_PERSONAL_DATA'
+    '../../SENSITIVE_DATA/html-tagged',
+    '../../PERSONAL_DATA/html-tagged',
+    '../../NON_PERSONAL_DATA'
 ])
 
 
@@ -78,7 +83,10 @@ preprocessor = Pipeline([('vect', CountVectorizer()),
                      ('tfidf', TfidfTransformer()),
                      ('pca', TruncatedSVD(n_components=430))])
 preprocessor.fit(x_train)
+
+ensure_directory('line-clf')
 f = open("./line-clf/preprocessing.pickle", "wb")
+
 f.write(pickle.dumps(preprocessor))
 f.close()
 print("Finished dumping preprocessing pickle")
@@ -222,4 +230,5 @@ def save():
 	nn.save_weights("./line-clf/model.h5")
 
 save()
+
 

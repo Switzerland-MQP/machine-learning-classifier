@@ -102,5 +102,9 @@ def ensure_directory(directory):
         os.makedirs(directory)
 
 
+def append_to_metadata_file(file, path):
+    pass
+
+
 if __name__ == "__main__":
     cli()

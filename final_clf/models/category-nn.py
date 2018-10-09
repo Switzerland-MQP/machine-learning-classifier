@@ -29,9 +29,9 @@ from keras.utils import np_utils
 
 
 documents = utils.load_dirs_custom([
-    '../../TAGGED_DATA_NEW_NEW/SENSITIVE_DATA/html-tagged',
-    '../../TAGGED_DATA_NEW_NEW/PERSONAL_DATA/html-tagged',
-    '../../TAGGED_DATA_NEW_NEW/NON_PERSONAL_DATA'
+    '../../SENSITIVE_DATA/html-tagged',
+    '../../PERSONAL_DATA/html-tagged',
+    '../../NON_PERSONAL_DATA'
 ], individual=True)
 
 x = []
@@ -48,7 +48,7 @@ for document in documents:
 
 y_encoded = []
 for categories in y:
-	one_hot_encoded = np.zeros(23)
+	one_hot_encoded = np.zeros(len(utils.all_categories_dict.keys()))
 	for category in categories:
 		i = utils.all_categories_dict.inv[category]
 		one_hot_encoded[i] = 1
@@ -143,7 +143,7 @@ def cutoff_graph(predicted_category, y_category):
 
 
 cutoff_dict = {}
-for i in range(22):
+for i in range(len(utils.all_categories_dict.keys()) -1):
 	category = utils.all_categories_dict[i+1]
 	predicted_category = predicted[:,i+1]
 	y_category = y_test[:,i+1]
