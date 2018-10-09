@@ -102,7 +102,7 @@ def run_model(filepath):
 
         # TODO: Line prediction
 
-        results.append((path, predicted_class))
+        results.append((path, predicted_class, high_probability_categories))
         print(f"File path: {path}")
         print(f"Predicted class: {predicted_class} with confidence {confidence(predicted_vec)}")
         print(f"High probability categories: {high_probability_categories}")

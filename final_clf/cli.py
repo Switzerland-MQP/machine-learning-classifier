@@ -59,7 +59,7 @@ def classify_impl(source, dest):
     if os.path.isdir(failed_source):
         shutil.move(failed_source, dest)
 
-    for path, category in results:
+    for path, category, high_probability_categories in results:
         print(f"File: {path} is {category}")
         filename = ntpath.basename(path)[:-4]
         original_filename = f"{original_source_path}/{filename}"
