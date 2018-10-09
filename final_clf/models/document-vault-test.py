@@ -36,11 +36,31 @@ preprocessing = pickle.load(open("./document-clf/preprocessing.pickle", "rb"))
 clf = load_keras_model("./document-clf/model.json",
 											"./document-clf/model.h5")
 
-documents = load_files("../../TEXTDATA")
-x = preprocessing.transform(documents.data)
-y = np.array(documents.target)
+documents = utils.load_dirs_custom([
+    '../../SUBSET/SENSITIVE_DATA/html-tagged',
+    '../../SUBSET/PERSONAL_DATA/html-tagged',
+    '../../SUBSET/NON_PERSONAL_DATA'
+])
 
-y_predicted = np.argmax(clf.predict(x), axis=1)
+x = []
+y_categories = []
+for document in documents:
+	lines = document.lines
+	categories = []
+	for line in lines:
+		for category in line.categories:
+			if category not in categories:
+				categories.append(category)
+	x += ['\n'.join(document.data)]
+	y_categories += [categories]
+
+personal_categories = utils.personal_categories_dict.values()
+sensitive_categories = utils.sensitive_cateogires_dict.values()
+
+y = []
+for categories in y_categories:
+	
+
 
 
 
