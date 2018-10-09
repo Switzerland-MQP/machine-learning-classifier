@@ -57,9 +57,9 @@ def show_overfit_plot():
 
 
 documents = utils.load_dirs_custom([
-    '../../SENSITIVE_DATA/html-tagged',
-    '../../PERSONAL_DATA/html-tagged',
-    '../../NON_PERSONAL_DATA'
+    '../../TAGGED_DATA_NEW_NEW/SENSITIVE_DATA/html-tagged',
+    '../../TAGGED_DATA_NEW_NEW/PERSONAL_DATA/html-tagged',
+    '../../TAGGED_DATA_NEW_NEW/NON_PERSONAL_DATA'
 ])
 
 
