@@ -94,7 +94,7 @@ def run_model(filepath):
         #Predict individual categories
         predicted_categories = category_clf.predict([category_pca])[0]
         high_probability_categories = []
-        for i in range(len(utils.all_categories_dict.keys() - 1)):
+        for i in range(len(utils.all_categories_dict.keys()) - 1):
             category = utils.all_categories_dict[i+1]
             cutoff = cutoffs[category]
             if predicted_categories[i+1] > cutoff:
@@ -107,7 +107,6 @@ def run_model(filepath):
         print(f"Predicted class: {predicted_class} with confidence {confidence(predicted_vec)}")
         print(f"High probability categories: {high_probability_categories}")
 
-        # TODO: put original files in new directory corresponding to class
         # TODO: write metadata file to this new directory
     return results
 
