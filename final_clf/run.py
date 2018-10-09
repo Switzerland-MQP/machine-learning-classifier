@@ -94,7 +94,7 @@ def run_model(filepath):
         #Predict individual categories
         predicted_categories = category_clf.predict([category_pca])[0]
         high_probability_categories = []
-        for i in range(22):
+        for i in range(len(utils.all_categories_dict.keys() - 1)):
             category = utils.all_categories_dict[i+1]
             cutoff = cutoffs[category]
             if predicted_categories[i+1] > cutoff:
