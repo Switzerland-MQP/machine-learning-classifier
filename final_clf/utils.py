@@ -91,6 +91,7 @@ def fill_docs(documents, individual=False):
                 contexts,
                 [convert_categories(line.context, individual)]
             )
+        #  import ipdb; ipdb.set_trace()
         doc.data = data
         doc.text = full_text
         doc.contexts = contexts
