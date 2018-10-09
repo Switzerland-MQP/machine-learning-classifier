@@ -38,16 +38,17 @@ clf = load_keras_model("./line-clf/model.json",
 											"./line-clf/model.h5")
 
 documents = utils.load_dirs_custom([
-    '../../TAGGED_DATA_NEW_NEW/SENSITIVE_DATA/html-tagged',
-    '../../TAGGED_DATA_NEW_NEW/PERSONAL_DATA/html-tagged',
-    '../../TAGGED_DATA_NEW_NEW/NON_PERSONAL_DATA'
+    'Sensitive',
+    'Personal',
+    'Non-Personal'
 ])
 documents = utils.n_gram_documents_range(documents, 8, 8)
 x, y = utils.convert_docs_to_lines(documents)
 
 x = preprocessing.transform(x)
 
-y_predicted = np.argmax(clf.predict(x), axis=1)
+y_predicted = np.where(clf.predict(x) >= 0.5, 1, 0)
+y = np.where(y == 0, 0, 1)
 
 
 
@@ -73,8 +74,8 @@ def print_results(predicted, y):
 	print("Confusion matrix: \n{}".format(confusion_matrix(y, predicted)))
 	print(f"Recalls: {recall(y, predicted)}")
 
-import ipdb
-ipdb.set_trace()
+#  import ipdb
+#  ipdb.set_trace()
 
 print_results(y_predicted, y)
 
