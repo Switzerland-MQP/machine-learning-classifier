@@ -74,8 +74,6 @@ def run_model(filepath):
     ###########################################
 
     loaded_documents = utils.load_dir_custom(filepath)
-
-    # Line preprocessing INCOMPLETE?
     line_docs = utils.n_gram_documents_range(loaded_documents, 8, 8)
 
 
