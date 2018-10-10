@@ -16,7 +16,7 @@ In command line run:
 
 ### OCR
 In command line run:
-- `python cli.py ocr inputDirectory` 
+- `python cli.py ocr input_directory` 
 
 ### Classification
 In command line run:
