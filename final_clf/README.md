@@ -2,6 +2,7 @@
 ## Setup
 In a command line:
 1. Make sure Python 3.x is installed
+3. If using a Mac make sure Home Brew is installed
 2. run `setup.sh`
 
 ## Pipeline Overview
