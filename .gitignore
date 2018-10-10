@@ -142,7 +142,6 @@ outputfolder
 
 /final_clf/models/category-clf/preprocessing.pickle
 /final_clf/models/category-clf/model.h5
-/final_clf/models/category-clf/cutoffs.pickle
 /final_clf/models/category-clf/model.json
 
 /final_clf/models/line-clf/preprocessing.pickle
@@ -151,3 +150,11 @@ outputfolder
 
 DOCUMENT_TEXT_DATA
 NON_TEXT_DATA
+
+/Vault/
+/SUBSET/
+
+/final_clf/source/
+/final_clf/output/
+/vault_document/
+/vault_line/

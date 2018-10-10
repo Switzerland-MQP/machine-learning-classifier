@@ -73,15 +73,15 @@ def run_model(filepath):
     print("Done loading models from disk.")
     ###########################################
 
-    #  loaded_documents = load_files('./documents/text_documents', shuffle=False)
     loaded_documents = utils.load_dir_custom(filepath)
+    line_docs = utils.n_gram_documents_range(loaded_documents, 8, 8)
 
-    # Line preprocessing INCOMPLETE?
-    #  loaded_line_documents = utils.load_dirs_custom(['./documents/text_documents/text_documents'])
-    line_groups = utils.n_gram_documents_range(loaded_documents, 8, 8)
 
     results = []
-    for doc in loaded_documents:
+    for i in range(len(loaded_documents)):
+        doc = loaded_documents[i]
+        lines = line_docs[i].data			
+
         path = doc.path
         text = doc.text
         document_pca = document_preprocessing.transform([text])
@@ -90,24 +90,34 @@ def run_model(filepath):
         #  Predict document class
         predicted_vec = document_clf.predict(document_pca)
         predicted_class = np.argmax(predicted_vec, axis=1)
+				
 
-        #Predict individual categories
-        predicted_categories = category_clf.predict([category_pca])[0]
         high_probability_categories = []
-        for i in range(22):
-            category = utils.all_categories_dict[i+1]
-            cutoff = cutoffs[category]
-            if predicted_categories[i+1] > cutoff:
-                high_probability_categories.append(category)
+        if predicted_class != 0: #Only predict categories if it makes sense
+        #Predict individual categories
+            predicted_categories = category_clf.predict([category_pca])[0]
+            for i in range(len(utils.all_categories_dict.keys()) - 1):
+                category = utils.all_categories_dict[i+1]
+                cutoff = cutoffs[category]
+                if predicted_categories[i+1] > cutoff:
+                    high_probability_categories.append(category)
+        
+        # Predict which lines are personal/sensitive
+        personal_lines = []
+        if predicted_class != 0: # Only predict lines if it makes sense
+            lines_pca = line_preprocessing.transform(lines)
+            predicted_lines = line_clf.predict(lines_pca)
+            for i in range(len(lines)):
+                if predicted_lines[i] != 0: # Line is personal
+                    personal_lines.append(lines[i])
 
-        # TODO: Line prediction
-
-        results.append((path, predicted_class))
+        results.append((path, predicted_class, high_probability_categories, personal_lines))
         print(f"File path: {path}")
         print(f"Predicted class: {predicted_class} with confidence {confidence(predicted_vec)}")
         print(f"High probability categories: {high_probability_categories}")
+        print(f"Personal lines: {personal_lines}")
+        print("==============================================================================")
 
-        # TODO: put original files in new directory corresponding to class
         # TODO: write metadata file to this new directory
     return results
 

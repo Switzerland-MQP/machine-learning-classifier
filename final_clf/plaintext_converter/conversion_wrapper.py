@@ -29,7 +29,7 @@ def valid(file):
 def convert_directory(source, dest):
     if not os.path.isdir(source):
         print("Please give a directory as the first argument")
-        os.exit()
+        sys.exit(1)
 
     if not os.path.isdir(dest):
         os.makedirs(dest)

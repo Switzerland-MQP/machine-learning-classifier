@@ -12,6 +12,7 @@ personal_categories_dict = bidict({
     4: 'online-id',
     5: 'dob',
     6: 'phone',
+    7: 'psychological',
     8: 'professional',
     9: 'genetic',
     10: 'mental',
@@ -27,6 +28,7 @@ sensitive_categories_dict = bidict({
     17: 'health',
     18: 'religion',
     19: 'political',
+    20: 'philosophical',
     21: 'unions',
     22: 'sex-life',
     23: 'sex-orientation',
@@ -89,6 +91,7 @@ def fill_docs(documents, individual=False):
                 contexts,
                 [convert_categories(line.context, individual)]
             )
+        #  import ipdb; ipdb.set_trace()
         doc.data = data
         doc.text = full_text
         doc.contexts = contexts
