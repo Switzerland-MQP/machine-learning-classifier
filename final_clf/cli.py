@@ -82,6 +82,7 @@ def classify_impl(source, dest):
         print(f"File: {filename} is {category}")
         original_filename = f"{original_source_path}/{filename}"
 
+        predicted_lines = remove_duplicates(predicted_lines)
 
         output_file = ''
         #  import ipdb
@@ -167,6 +168,14 @@ def append_to_metadata_file(metadata_file, classified_file, categories):
     data = {classified_file: {'high_probability_categories': categories}}
     json.dump(data, metadata_file, sort_keys=True, indent=4)
     metadata_file.write('\n')
+
+
+def remove_duplicates(n_gram_lines):
+    all_lines = set()
+    for line in n_gram_lines:
+        individual_lines = line.split('\n')
+        all_lines = all_lines.union(individual_lines)
+    return list(all_lines)
 
 
 if __name__ == "__main__":
