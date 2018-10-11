@@ -3,7 +3,7 @@ start = time.time()
 
 from sklearn.datasets import load_files
 
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, HashingVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import TruncatedSVD
@@ -48,11 +48,11 @@ for document in documents:
 
 y_encoded = []
 for categories in y:
-	one_hot_encoded = np.zeros(len(utils.all_categories_dict.keys()))
-	for category in categories:
-		i = utils.all_categories_dict.inv[category]
-		one_hot_encoded[i] = 1
-	y_encoded += [one_hot_encoded]
+    one_hot_encoded = np.zeros(len(utils.all_categories_dict.keys()))
+    for category in categories:
+        i = utils.all_categories_dict.inv[category]
+        one_hot_encoded[i] = 1
+    y_encoded += [one_hot_encoded]
 y = y_encoded
 
 
@@ -66,7 +66,7 @@ y_train = np.array(y_train)
 y_test = np.array(y_test)
 
 
-preprocessing = Pipeline([('count', CountVectorizer()),
+preprocessing = Pipeline([('count', HashingVectorizer(n_features=(2**12))),
 												  ('tfidf', TfidfTransformer()),
 													('pca', TruncatedSVD(n_components=430))])
 preprocessing.fit(x_train)

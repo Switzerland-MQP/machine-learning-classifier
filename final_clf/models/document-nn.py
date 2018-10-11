@@ -3,7 +3,7 @@ start = time.time()
 
 from sklearn.datasets import load_files
 
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, HashingVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import TruncatedSVD
@@ -31,7 +31,7 @@ x_train, x_test, y_train, y_test = train_test_split(
 
 x_test_copy = x_test.copy()
 
-preprocessing = Pipeline([('count', CountVectorizer()),
+preprocessing = Pipeline([('count', HashingVectorizer(n_features=(2**12))),
 												  ('tfidf', TfidfTransformer()),
 													('pca', TruncatedSVD(n_components=430))])
 preprocessing.fit(x_train)
