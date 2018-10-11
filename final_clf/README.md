@@ -13,7 +13,7 @@ The second main step is the classification of the different files based on the p
 ## How to Run
 ### Full
 In command line run:
-- `python cli.py full model_zip_file input_directory output_directory`
+- `python cli.py full input_directory output_directory`
 
 ### OCR
 In command line run:
@@ -21,7 +21,7 @@ In command line run:
 
 ### Classification
 In command line run:
-- `python cli.py class model_zip_file intermediate_directory output_directory`
+- `python cli.py class intermediate_directory output_directory`
 
 
 # Training/ Data Labeling Instructions
@@ -33,10 +33,7 @@ Document level labeling is used to train the models that classify documents into
 2. Identify category of PII and copy new training data into the corresponding directory
 
 ## Training Model
-After Labeling more data run:
-- `python cli.py train new_data`
-
-This will output a zip file containing the weights of the new model
+Add the new labeled data to the original data and run ``
 
 
 
