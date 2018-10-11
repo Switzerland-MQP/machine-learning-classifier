@@ -21,7 +21,7 @@ In command line run:
 
 ### Classification
 In command line run:
-- `python3 cli.py class intermediate_directory output_directory`
+- `python3 cli.py classify intermediate_directory output_directory`
 
 
 # Training/ Data Labeling Instructions
