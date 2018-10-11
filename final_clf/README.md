@@ -33,7 +33,7 @@ Document level labeling is used to train the models that classify documents into
 2. Identify category of PII and copy new training data into the corresponding directory
 
 ## Training Model
-Add the new labeled data to the original data and run `python3 nn-document.py` 
+Add the new labeled data to the original data and run `python3 document-nn.py` 
 
 
 
