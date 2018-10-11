@@ -26,7 +26,9 @@ def ocr(source, dest):
 
 def ocr_impl(source, dest):
     click.echo("Ocr")
-    failed_files = plaintext_converter.convert_directory(source, dest)
+    failed_files = plaintext_converter.convert_directory(
+        source, dest
+    )
 
     global original_source_path
     original_source_path = source
@@ -42,6 +44,8 @@ def ocr_impl(source, dest):
 @click.argument("source")
 @click.argument("dest")
 def classify(source, dest):
+    global original_source_path
+    original_source_path = source
     classify_impl(source, dest)
 
 
@@ -61,44 +65,79 @@ def classify_impl(source, dest):
     metadata_personal = open(personal_dir + '/metadata.json', 'a+')
     metadata_sensitive = open(sensitive_dir + '/metadata.json', 'a+')
     metadata_nonpersonal = open(nonpersonal_dir + '/metadata.json', 'a+')
+    lines_personal_file = open(personal_dir + '/lines_file.json', 'a+')
+    lines_sensitive_file = open(sensitive_dir + '/lines_file.json', 'a+')
+    lines_nonpersonal_file = open(nonpersonal_dir + '/lines_file.json', 'a+')
 
     if os.path.isdir(failed_source):
+        if os.path.isdir(dest + '/' + failed_source):
+            shutil.rmtree(dest + '/' + failed_source)
         shutil.move(failed_source, dest)
 
-    for path, category, individual_categories in results:
-        print(f"File: {path} is {category}")
-        filename = ntpath.basename(path)[:-4]
+    nonpersonal_count = 0
+    personal_count = 0
+    sensitive_count = 0
+    for path, category, individual_categories, predicted_lines in results:
+        filename = path.replace(f"{source}/", "")
+        print(f"File: {filename} is {category}")
         original_filename = f"{original_source_path}/{filename}"
-        print(f"Filename is {filename}")
-        print(f"Source file is {original_filename}")
+
 
         output_file = ''
         #  import ipdb
         #  ipdb.set_trace()
         if category[0] == 0:
-            output_file = nonpersonal_dir + '/' + filename
+            output_file = os.path.join(nonpersonal_dir, filename)
+            nonpersonal_count += 1
         if category[0] == 1:
-            output_file = personal_dir + '/' + filename
+            output_file = os.path.join(personal_dir, filename)
             append_to_metadata_file(
                 metadata_personal,
                 filename,
                 individual_categories
             )
+            append_to_metadata_file(
+                lines_personal_file,
+                filename,
+                predicted_lines
+            )
+            personal_count += 1
         if category[0] == 2:
-            output_file = sensitive_dir + '/' + filename
+            output_file = os.path.join(sensitive_dir, filename)
             append_to_metadata_file(
                 metadata_sensitive,
                 filename,
                 individual_categories
             )
-
+            append_to_metadata_file(
+                lines_sensitive_file,
+                filename,
+                predicted_lines
+            )
+            sensitive_count += 1
 
         #  import ipdb; ipdb.set_trace()
-        print("Output File", output_file)
+        #  print("Output File", output_file)
+
+        if not os.path.exists(os.path.dirname(output_file)):
+            os.makedirs(os.path.dirname(output_file))
         shutil.copyfile(original_filename, output_file)
+    total_count = nonpersonal_count + personal_count + sensitive_count
+    if total_count == 0:
+        total_count = 1
+
+    print("---------------------------------------------")
+    print("Document Ratios: ")
+    print(f"Total Count: {total_count}")
+    print(f"Non Personal: {nonpersonal_count/total_count}")
+    print(f"Personal: {personal_count/total_count}")
+    print(f"Sensitive: {sensitive_count/total_count}")
     metadata_personal.close()
     metadata_sensitive.close()
     metadata_nonpersonal.close()
+    lines_personal_file.close()
+    lines_sensitive_file.close()
+    lines_nonpersonal_file.close()
 
 
 @cli.command()
@@ -132,3 +171,11 @@ def append_to_metadata_file(metadata_file, classified_file, categories):
 
 if __name__ == "__main__":
     cli()
+
+
+# recursive folder structure
+# empty files
+# Fix classify paths
+# Streamline training
+# unique lines
+# Choose new model
