@@ -81,7 +81,7 @@ def run_model(filepath):
     results = []
     for i in range(len(loaded_documents)):
         doc = loaded_documents[i]
-        lines = line_docs[i].data			
+        lines = line_docs[i].data
 
         path = doc.path
         text = doc.text
@@ -106,12 +106,12 @@ def run_model(filepath):
         
         # Predict which lines are personal/sensitive
         personal_lines = []
-        if predicted_class != 0: # Only predict lines if it makes sense
-            lines_pca = line_preprocessing.transform(lines)
-            predicted_lines = line_clf.predict(lines_pca)
-            for i in range(len(lines)):
-                if predicted_lines[i] != 0: # Line is personal
-                    personal_lines.append(lines[i])
+        if predicted_class != 0 and len(lines) != 0:  # Only predict lines if it makes sense
+                lines_pca = line_preprocessing.transform(lines)
+                predicted_lines = line_clf.predict(lines_pca)
+                for i in range(len(lines)):
+                    if predicted_lines[i] != 0: # Line is personal
+                        personal_lines.append(lines[i])
 
         pred_confidence = confidence(predicted_vec)/MAX_CONFIDENCE
         results.append((path, predicted_class, high_probability_categories, personal_lines))
@@ -119,7 +119,7 @@ def run_model(filepath):
         print(f"File path: {path}")
         print(f"Predicted class: {predicted_class} with confidence {pred_confidence}")
         print(f"High probability categories: {high_probability_categories}")
-        print(f"Personal lines: {personal_lines}")
+        #  print(f"Personal lines: {personal_lines}")
         print("==============================================================================")
 
     return results

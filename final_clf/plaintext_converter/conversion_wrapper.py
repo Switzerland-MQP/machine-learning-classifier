@@ -1,14 +1,16 @@
 import os
 import uuid
 import sys
+import fnmatch
 
 from plaintext_converter import to_plaintext
 
 
 def getDestFilename(dest, file):
-    destFileName = "{}/{}.txt".format(dest, file)
-    if os.path.exists(destFileName):
-        destFileName = "{}/{}-{}.txt".format(dest, file, str(uuid.uuid4()))
+    destFileName = os.path.join(dest, file)
+    #  destFileName = "{}/{}.txt".format(dest, file)
+    #  if os.path.exists(destFileName):
+        #  destFileName = "{}/{}-{}.txt".format(dest, file, str(uuid.uuid4()))
     return destFileName
 
 
@@ -34,7 +36,6 @@ def convert_directory(source, dest):
     if not os.path.isdir(dest):
         os.makedirs(dest)
 
-    original_file_names = []
     failed_files = []
     for root, dirs, files in os.walk(source):
         for file in files:
@@ -43,7 +44,8 @@ def convert_directory(source, dest):
             if not valid(file):
                 continue
 
-            full_file_name = root + "/" + file
+            full_file_name = os.path.join(root, file)
+            #  import ipdb; ipdb.set_trace()
 
             try:
                 text = to_plaintext.to_plaintext(full_file_name)
@@ -56,10 +58,12 @@ def convert_directory(source, dest):
                 failed_files.append(full_file_name)
                 continue
 
-            destFileName = getDestFilename(dest, file)
+            file_path = full_file_name.replace(f"{source}/", "")
+            destFileName = getDestFilename(dest, file_path)
+            if not os.path.exists(os.path.dirname(destFileName)):
+                os.makedirs(os.path.dirname(destFileName))
             destFile = open(destFileName, "wb")
             destFile.write(text)
             destFile.close()
-            original_file_names += file
     print(f"Failed files: {failed_files}")
     return failed_files

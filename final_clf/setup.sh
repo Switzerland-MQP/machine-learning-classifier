@@ -1,6 +1,6 @@
-pip3 install virtualenv
-virtualenv venv11
-source venv11/bin/activate
+sudo pip3 install virtualenv
+virtualenv venv
+source venv/bin/activate
 os=$(uname)
 if [ $os = "Linux" ]; then
     sudo apt install poppler-utils

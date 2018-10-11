@@ -100,6 +100,8 @@ def fill_docs(documents, individual=False):
 
 
 def classify_doc(target_array):
+    if len(target_array) == 0:
+        return 0
     return max(target_array)
 
 
@@ -136,7 +138,7 @@ def read_dir(directory):
     documents = []
     for root, dirs, files in os.walk(directory):
         for file in files:
-            full_path = root + '/' + file
+            full_path = os.path.join(root, file)
             lines = run_parser(full_path)
             doc = Document(full_path, lines)
             documents.append(doc)
@@ -191,6 +193,14 @@ def n_gram_documents(docs, n):
 def n_grams(data_array, target_array, n):
     grams = np.array([])
     targets = np.array([])
+    if len(data_array) == 0:
+        return grams, targets
+        
+    if len(data_array) <= n:
+        grams = np.append(grams, data_array)
+        targets = np.append(targets, [max(target_array)])
+        return grams, targets
+
     for i in range(len(data_array) - n + 1):
         new_str = '\n'.join(data_array[i:i+n])
         grams = np.append(grams, [new_str])
