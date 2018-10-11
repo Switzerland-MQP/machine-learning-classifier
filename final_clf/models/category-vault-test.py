@@ -28,9 +28,9 @@ from keras.utils import np_utils
 
 
 documents = utils.load_dirs_custom([
-    '../../Vault/Sensitive',
-    '../../Vault/Personal',
-    '../../Vault/Non-personal'
+    '../../vault_line/sensitive',
+    '../../vault_line/personal',
+    '../../vault_line/nonpersonal'
 ], individual=True)
 
 x = []

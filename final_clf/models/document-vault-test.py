@@ -38,9 +38,9 @@ clf = load_keras_model("./document-clf/model.json",
 											"./document-clf/model.h5")
 
 documents = utils.load_dirs_custom([
-    '../../Vault/Sensitive',
-    '../../Vault/Personal',
-    '../../Vault/non-personal'
+    '../../vault_line/sensitive',
+    '../../vault_line/personal',
+    '../../vault_line/nonpersonal'
 ])
 
 x = []
