@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.decomposition import TruncatedSVD
 from sklearn.pipeline import Pipeline
 
-from sklearn.metrics import fbeta_score, confusion_matrix, recall_score 
+from sklearn.metrics import fbeta_score, confusion_matrix, recall_score
 
 
 from keras.models import Sequential, Model

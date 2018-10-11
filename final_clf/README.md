@@ -13,15 +13,15 @@ The second main step is the classification of the different files based on the p
 ## How to Run
 ### Full
 In command line run:
-- `python cli.py full model_zip_file input_directory output_directory`
+- `./classifier full input_directory output_directory`
 
 ### OCR
 In command line run:
-- `python cli.py ocr input_directory` 
+- `./classifier ocr input_directory intermediate_directory` 
 
 ### Classification
 In command line run:
-- `python cli.py class model_zip_file intermediate_directory output_directory`
+- `./classifier classify model_zip_file intermediate_directory output_directory`
 
 
 # Training/ Data Labeling Instructions
@@ -34,7 +34,7 @@ Document level labeling is used to train the models that classify documents into
 
 ## Training Model
 After Labeling more data run:
-- `python cli.py train new_data`
+- `./classifier train new_data`
 
 This will output a zip file containing the weights of the new model
 
