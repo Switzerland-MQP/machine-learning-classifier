@@ -13,19 +13,19 @@ The second main step is the classification of the different files based on the p
 ## How to Run
 ### Full
 In command line run:
-- `python cli.py full input_directory output_directory`
+- `python3 cli.py full input_directory output_directory`
 
 ### OCR
 In command line run:
-- `python cli.py ocr input_directory` 
+- `python3 cli.py ocr input_directory` 
 
 ### Classification
 In command line run:
-- `python cli.py class intermediate_directory output_directory`
+- `python3 cli.py class intermediate_directory output_directory`
 
 
 # Training/ Data Labeling Instructions
-If you would like to train a model further train your own model, then more data labeling and model training has to occur. This can be done a few ways when used within our system, and has to be done on the text versions of the documents. If you would like to find these text versions, after running the OCR on new training data find `intermediate_directory` within your file system. 
+If you would like to train a model further train your own model, then more data labeling and model training has to occur. This can be done within our system, and has to be done on the text versions of the documents. If you would like to find these text versions, after running the OCR on new training data find `intermediate_directory` within your file system. 
 
 ## Document Level Labeling
 Document level labeling is used to train the models that classify documents into the  Non-Personal, Personal and Sensitive Personal Data categories. To label more training data:
@@ -33,7 +33,7 @@ Document level labeling is used to train the models that classify documents into
 2. Identify category of PII and copy new training data into the corresponding directory
 
 ## Training Model
-Add the new labeled data to the original data and run ``
+Add the new labeled data to the original data and run `python3 nn-document.py` 
 
 
 
