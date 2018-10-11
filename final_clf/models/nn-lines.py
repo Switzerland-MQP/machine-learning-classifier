@@ -9,7 +9,7 @@ from scipy.stats import randint as sp_randint
 
 from sklearn.ensemble import RandomForestClassifier
 
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, HashingVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.metrics import confusion_matrix, fbeta_score
@@ -79,7 +79,7 @@ y_test = np.where((y_test == 2) | (y_test == 1), 1, 0)
 
 print("Convert lines timing {}".format(time.time() - start))
 
-preprocessor = Pipeline([('vect', CountVectorizer()),
+preprocessor = Pipeline([('vect', HashingVectorizer(n_features=(2**12))),
                      ('tfidf', TfidfTransformer()),
                      ('pca', TruncatedSVD(n_components=430))])
 preprocessor.fit(x_train)

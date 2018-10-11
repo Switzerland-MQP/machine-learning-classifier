@@ -49,10 +49,11 @@ def load_keras_model(json_path, weights_path):
 
 def confidence(predicted_vec):
     predicted_vec = np.array(predicted_vec)
-    norm = np.linalg.norm(np.sum(predicted_vec))
+    norm = np.linalg.norm(predicted_vec)
     divided = (predicted_vec.T/norm).T
     stdev = np.std(divided)
     return stdev
+MAX_CONFIDENCE = confidence(np.array([0, 1, 0]))
 
 
 ###########################################
@@ -100,7 +101,8 @@ def run_model(filepath):
                 category = utils.all_categories_dict[i+1]
                 cutoff = cutoffs[category]
                 if predicted_categories[i+1] > cutoff:
-                    high_probability_categories.append(category)
+                    if category not in ["biometric", "sex-orientation", "sex-life", "unions", "philosophical", "political", "religion", "social", "cultural", "economic", "mental", "genetic"]:
+                        high_probability_categories.append(category)
         
         # Predict which lines are personal/sensitive
         personal_lines = []
@@ -111,9 +113,11 @@ def run_model(filepath):
                     if predicted_lines[i] != 0: # Line is personal
                         personal_lines.append(lines[i])
 
+        pred_confidence = confidence(predicted_vec)/MAX_CONFIDENCE
         results.append((path, predicted_class, high_probability_categories, personal_lines))
+        print(f"Max confidence = {confidence(np.array([0, 1, 0]))}")
         print(f"File path: {path}")
-        print(f"Predicted class: {predicted_class} with confidence {confidence(predicted_vec)}")
+        print(f"Predicted class: {predicted_class} with confidence {pred_confidence}")
         print(f"High probability categories: {high_probability_categories}")
         #  print(f"Personal lines: {personal_lines}")
         print("==============================================================================")

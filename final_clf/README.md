@@ -25,7 +25,7 @@ In command line run:
 
 
 # Training/ Data Labeling Instructions
-If you would like to train a model further train your own model, then more data labeling and model training has to occur. This can be done a few ways when used within our system, and has to be done on the text versions of the documents. If you would like to find these text versions, after running the OCR on new training data find `intermediate_directory` within your file system. 
+If you would like to train a model further train your own model, then more data labeling and model training has to occur. This can be done within our system, and has to be done on the text versions of the documents. If you would like to find these text versions, after running the OCR on new training data find `intermediate_directory` within your file system. 
 
 ## Document Level Labeling
 Document level labeling is used to train the models that classify documents into the  Non-Personal, Personal and Sensitive Personal Data categories. To label more training data:

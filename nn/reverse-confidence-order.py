@@ -178,22 +178,23 @@ def show_variance_plot():
 
 # Now run on unlabeled documents
 # NOTE: This is data snooping right now; this model has already seen these files
-unlabeled = load_files('../UNLABELED_DATA', shuffle=True)
+unlabeled = load_files('../TEXTDATA', shuffle=True)
 x = preprocessing.transform(unlabeled.data)
 predicted = nn.predict(x)
 
-confidences = np.std((predicted.T/np.sum(predicted, 1)).T, 1)
+confidences = np.std((predicted.T/np.linalg.norm(predicted_vec, axis=1)).T, 1)
 indices = np.argsort(confidences)
 confidences = np.array(to_1_interval(confidences))
 
 
 for i in range(len(indices)):
-	if np.argmax(predicted[indices[i]]) != 2:
-		continue
-	doc_path = unlabeled.filenames[indices[i]]
-	confidence = confidences[indices[i]]
-	filename = f"{i}-{confidence:.3f}-{doc_path[33:]}"
-	print(filename)
+    if np.argmax(predicted[indices[i]]) != 2:
+        continue
+    doc_path = unlabeled.filenames[indices[i]]
+    confidence = confidences[indices[i]]
+    #confidence = confidence/(4/9)
+    filename = f"{i}-{predicted[i]}-{confidence:.3f}-{doc_path[33:]}"
+    print(filename)
 
 	#f = open('./confidence_out/'+filename, "w+")
 	#infile = open(doc_path)
